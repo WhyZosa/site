@@ -11,14 +11,16 @@
         <h1>Вход</h1>
         <form id="login-form">
             <label for="email">Электронная почта:</label>
-            <input type="email" id="email" name="email" required>
+            <input type="email" id="login-email" name="email" required>
 
             <label for="password">Пароль:</label>
-            <input type="password" id="password" name="password" required>
+            <input type="password" id="login-password" name="password" required>
 
             <button type="submit">Войти</button>
         </form>
         <p class="switch-link">Еще не зарегистрированы? <a href="registration.html">Зарегистрироваться</a></p>
+        <p id="login-error" class="error-message"></p>
     </div>
+    <script src="scripts.js"></script>
 </body>
 </html>
