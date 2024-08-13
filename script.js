@@ -9,9 +9,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const errorMessage = document.getElementById('login-error');
 
             if (email && password) {
-                // Здесь можно добавить проверку на стороне клиента
                 // Отправка данных на сервер для проверки
-                fetch('https://your-server-endpoint/login', { // Замените на ваш URL
+                fetch('https://', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
