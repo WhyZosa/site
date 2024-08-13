@@ -11,8 +11,28 @@ document.addEventListener('DOMContentLoaded', function() {
             if (email && password) {
                 // Здесь можно добавить проверку на стороне клиента
                 // Отправка данных на сервер для проверки
-                // Для примера просто перенаправляем на приветственную страницу
-                window.location.href = 'welcome.html';
+                fetch('https://your-server-endpoint/login', { // Замените на ваш URL
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Перенаправление на приветственную страницу после успешного входа
+                        window.location.href = 'welcome.html';
+                    } else {
+                        errorMessage.textContent = 'Ошибка входа: ' + data.message;
+                    }
+                })
+                .catch(error => {
+                    errorMessage.textContent = 'Произошла ошибка: ' + error.message;
+                });
             } else {
                 errorMessage.textContent = 'Пожалуйста, заполните все поля.';
             }
