@@ -3,18 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Приветственная страница</title>
+    <title>Добро пожаловать</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Добро пожаловать!</h1>
-        <p>Вы успешно зарегистрировались. Выберите один из модулей для начала обучения:</p>
-        <ul>
-            <li><a href="#module1">Модуль 1: Введение</a></li>
-            <li><a href="#module2">Модуль 2: Основы</a></li>
-            <li><a href="#module3">Модуль 3: Продвинутый уровень</a></li>
-        </ul>
+    <header>
+        <div class="avatar-container">
+            <img src="default-avatar.png" alt="Аватар" id="avatar" class="avatar">
+        </div>
+    </header>
+    <div class="welcome-container">
+        <h1>Добро пожаловать, <span id="user-name"></span>!</h1>
+        <p>Вы вошли на сайт для прохождения курсов. Вы можете перейти в свой профиль или начать изучать курсы.</p>
+        <a href="profile.html" class="button">Перейти в профиль</a>
+        <a href="courses.html" class="button">Начать курсы</a>
+        <button id="logout" class="button">Выйти</button>
     </div>
+    <script src="welcome.js"></script>
 </body>
 </html>
