@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
-            if (data.success) {
+            if (data) {
                 userNameSpan.textContent = data.user.name;
                 // Установить аватар, если есть
                 if (data.user.avatarUrl) {
