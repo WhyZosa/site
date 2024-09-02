@@ -11,7 +11,82 @@ body {
     color: #333;
 }
 
-/* Стили шапки */
+/* Стили для контейнеров */
+.container, .login-container {
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    margin: auto; /* Центрирование контейнера */
+    margin-top: 50px; /* Дополнительный отступ сверху */
+}
+
+/* Стили заголовков */
+h1 {
+    font-size: 28px;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Стили форм */
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+label {
+    align-self: flex-start;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.input {
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    width: 100%;
+    max-width: 320px;
+}
+
+/* Стили кнопок */
+.btn {
+    padding: 12px;
+    background-color: #007bff;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    max-width: 320px;
+}
+
+.btn:hover {
+    background-color: #0056b3;
+}
+
+.switch-link {
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.switch-link a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.switch-link a:hover {
+    text-decoration: underline;
+}
+
+/* Стили шапки сайта (для welcome.html) */
 header {
     display: flex;
     justify-content: space-between;
@@ -130,7 +205,7 @@ header {
     color: #007bff;
 }
 
-/* Стили основного контента */
+/* Стили основного контента (для welcome.html) */
 main {
     display: flex;
     justify-content: center;
@@ -165,7 +240,9 @@ main {
     gap: 20px;
 }
 
-.btn {
+.primary-btn {
+    background-color: #007bff;
+    color: #ffffff;
     padding: 12px 24px;
     border: none;
     border-radius: 25px;
@@ -173,11 +250,6 @@ main {
     cursor: pointer;
     text-decoration: none;
     transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.primary-btn {
-    background-color: #007bff;
-    color: #ffffff;
 }
 
 .primary-btn:hover {
@@ -188,78 +260,18 @@ main {
 .secondary-btn {
     background-color: #6c757d;
     color: #ffffff;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 25px;
+    font-size: 16px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .secondary-btn:hover {
     background-color: #5a6268;
     transform: translateY(-2px);
-}
-
-/* Стили для страницы входа */
-.login-page {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background-color: #f0f2f5;
-}
-
-.login-container {
-    background-color: #ffffff;
-    padding: 40px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 400px;
-    text-align: center;
-}
-
-.login-container h2 {
-    font-size: 28px;
-    color: #333;
-    margin-bottom: 20px;
-}
-
-.login-container form {
-    display: flex;
-    flex-direction: column;
-}
-
-.login-container input {
-    padding: 10px;
-    margin-bottom: 20px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 16px;
-}
-
-.login-container button {
-    padding: 12px;
-    background-color: #007bff;
-    color: #ffffff;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.login-container button:hover {
-    background-color: #0056b3;
-}
-
-.login-container .forgot-password {
-    margin-top: 10px;
-    font-size: 14px;
-}
-
-.login-container .forgot-password a {
-    color: #007bff;
-    text-decoration: none;
-}
-
-.login-container .forgot-password a:hover {
-    text-decoration: underline;
 }
 
 /* Адаптивность */
@@ -276,26 +288,21 @@ main {
         font-size: 16px;
     }
 
-    .btn {
+    .btn, .primary-btn, .secondary-btn {
         padding: 10px 20px;
         font-size: 14px;
     }
 
-    .login-container {
+    .login-container, .container {
         padding: 20px;
     }
 
-    .login-container h2 {
+    h1 {
         font-size: 24px;
     }
 
-    .login-container input {
+    .input {
         padding: 8px;
-        font-size: 14px;
-    }
-
-    .login-container button {
-        padding: 10px;
         font-size: 14px;
     }
 }
