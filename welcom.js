@@ -1,41 +1,38 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const userNameSpan = document.getElementById('user-name');
-    const logoutButton = document.getElementById('logout');
-    const avatar = document.getElementById('avatar');
+document.addEventListener('DOMContentLoaded', () => {
+    const profileMenu = document.querySelector('.profile-menu');
+    const dropdownMenu = document.getElementById('dropdown-menu');
+    const changeAvatarButton = document.getElementById('change-avatar-btn');
+    const avatarInput = document.getElementById('avatar-input');
+    const avatarImage = document.getElementById('profile-avatar');
+    const dropdownAvatar = document.getElementById('dropdown-avatar');
 
-    const token = localStorage.getItem('token');
-    if (!token) {
-        window.location.href = 'index.html';
-    } else {
-        fetch('https://your-api.com/verify-token', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data) {
-                userNameSpan.textContent = data.user.name;
-                // Установить аватар, если есть
-                if (data.user.avatarUrl) {
-                    avatar.src = data.user.avatarUrl;
-                }
-            } else {
-                localStorage.removeItem('token');
-                window.location.href = 'index.html';
-            }
-        })
-        .catch(error => {
-            console.error('Ошибка при проверке токена:', error);
-            localStorage.removeItem('token');
-            window.location.href = 'index.html';
-        });
-    }
+    // Открытие и закрытие меню при клике
+    profileMenu.addEventListener('click', () => {
+        dropdownMenu.classList.toggle('active');
+    });
 
-    logoutButton.addEventListener('click', function() {
-        localStorage.removeItem('token');
-        window.location.href = 'index.html';
+    // Закрытие меню при клике вне его
+    document.addEventListener('click', (event) => {
+        if (!profileMenu.contains(event.target) && dropdownMenu.classList.contains('active')) {
+            dropdownMenu.classList.remove('active');
+        }
+    });
+
+    // Изменение аватара пользователя
+    changeAvatarButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        avatarInput.click();
+    });
+
+    avatarInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                avatarImage.src = e.target.result;
+                dropdownAvatar.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
     });
 });

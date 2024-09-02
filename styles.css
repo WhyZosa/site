@@ -1,186 +1,301 @@
-/* Основные стили для всего сайта */
-body {
-    font-family: 'Arial', sans-serif;
-    background-color: #f4f4f4;
+/* Общие стили */
+* {
     margin: 0;
     padding: 0;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f2f5;
     color: #333;
 }
 
-/* Стили для шапки страницы */
+/* Стили шапки */
 header {
     display: flex;
-    justify-content: flex-end;
-    padding: 20px;
-    background-color: #fff;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    justify-content: space-between;
+    align-items: center;
+    background-color: #ffffff;
+    padding: 10px 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
 
-.avatar-container {
-    position: relative;
-}
-
-.avatar {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    border: 2px solid #007bff;
-    cursor: pointer;
-    transition: transform 0.3s ease, border-color 0.3s ease;
-}
-
-.avatar:hover {
-    transform: scale(1.1);
-    border-color: #0056b3;
-}
-
-/* Контейнер для всех форм и содержимого */
-.container {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    width: 90%;
-    max-width: 400px;
-    margin: 20px auto;
-}
-
-/* Заголовки */
-h1 {
+.logo h2 {
     font-size: 24px;
     color: #007bff;
-    margin-bottom: 20px;
 }
 
-/* Приветственный контейнер */
-.welcome-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+.profile-menu {
+    position: relative;
+    cursor: pointer;
+}
+
+.profile-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    transition: border 0.3s ease, transform 0.3s ease;
+}
+
+.profile-avatar:hover {
+    border: 2px solid #007bff;
+    transform: scale(1.1);
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 60px;
+    right: 0;
+    width: 250px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.dropdown-menu.active {
+    display: block;
+}
+
+.dropdown-menu::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    right: 20px;
+    border-width: 10px;
+    border-style: solid;
+    border-color: transparent transparent #ffffff transparent;
+}
+
+.user-info {
     text-align: center;
     padding: 20px;
-    margin-top: 20px;
+    border-bottom: 1px solid #f0f0f0;
 }
 
-.welcome-container p {
+.user-info img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+}
+
+.user-info h3 {
+    font-size: 18px;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.user-info p {
+    font-size: 14px;
+    color: #777;
+}
+
+.dropdown-menu ul {
+    list-style: none;
+    padding: 10px 0;
+    margin: 0;
+}
+
+.dropdown-menu ul li {
+    padding: 10px 20px;
+}
+
+.dropdown-menu ul li a {
+    text-decoration: none;
+    color: #333;
     font-size: 16px;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.3s ease;
+}
+
+.dropdown-menu ul li a i {
+    margin-right: 10px;
+    font-size: 18px;
+}
+
+.dropdown-menu ul li a:hover {
+    background-color: #f0f2f5;
+    color: #007bff;
+}
+
+/* Стили основного контента */
+main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: calc(100vh - 80px);
+    padding: 20px;
+}
+
+.welcome-section {
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.welcome-section h1 {
+    font-size: 32px;
     color: #333;
     margin-bottom: 20px;
-    max-width: 600px;
 }
 
-/* Кнопки */
-.button, .logout-button {
-    display: block;
-    padding: 10px 20px;
-    margin: 10px;
+.welcome-section p {
+    font-size: 18px;
+    color: #555;
+    margin-bottom: 30px;
+}
+
+.buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.btn {
+    padding: 12px 24px;
     border: none;
-    border-radius: 4px;
+    border-radius: 25px;
     font-size: 16px;
-    text-align: center;
     cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.3s ease;
-}
-
-.button {
-    background-color: #007bff;
-    color: #fff;
     text-decoration: none;
+    transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-.button:hover {
+.primary-btn {
+    background-color: #007bff;
+    color: #ffffff;
+}
+
+.primary-btn:hover {
     background-color: #0056b3;
-    transform: scale(1.05);
+    transform: translateY(-2px);
 }
 
-.logout-button {
-    background-color: #dc3545;
-    color: #fff;
+.secondary-btn {
+    background-color: #6c757d;
+    color: #ffffff;
 }
 
-.logout-button:hover {
-    background-color: #c82333;
-    transform: scale(1.05);
+.secondary-btn:hover {
+    background-color: #5a6268;
+    transform: translateY(-2px);
 }
 
-/* Форма */
-form {
+/* Стили для страницы входа */
+.login-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f0f2f5;
+}
+
+.login-container {
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.login-container h2 {
+    font-size: 28px;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.login-container form {
     display: flex;
     flex-direction: column;
 }
 
-label {
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-
-input {
-    margin-bottom: 15px;
+.login-container input {
     padding: 10px;
+    margin-bottom: 20px;
     border: 1px solid #ccc;
-    border-radius: 4px;
+    border-radius: 5px;
     font-size: 16px;
 }
 
-/* Ссылки для переключения между страницами */
-.switch-link {
-    margin-top: 15px;
-    text-align: center;
-}
-
-.switch-link a {
-    color: #007bff;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-.switch-link a:hover {
-    text-decoration: underline;
-}
-
-/* Сообщения об ошибках */
-.error-message {
-    color: red;
-    font-size: 14px;
-    margin-top: 10px;
-    text-align: center;
-}
-
-/* Стили для страницы профиля */
-.profile-container {
-    max-width: 500px;
-    margin: 20px auto;
-}
-
-.profile-form label {
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-
-.profile-form input {
-    margin-bottom: 15px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 16px;
-}
-
-.profile-form button {
-    padding: 10px;
+.login-container button {
+    padding: 12px;
+    background-color: #007bff;
+    color: #ffffff;
     border: none;
-    border-radius: 4px;
-    background-color: #28a745;
-    color: #fff;
+    border-radius: 5px;
     font-size: 16px;
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
 
-.profile-form button:hover {
-    background-color: #218838;
+.login-container button:hover {
+    background-color: #0056b3;
+}
+
+.login-container .forgot-password {
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.login-container .forgot-password a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.login-container .forgot-password a:hover {
+    text-decoration: underline;
+}
+
+/* Адаптивность */
+@media (max-width: 600px) {
+    .welcome-section {
+        padding: 20px;
+    }
+
+    .welcome-section h1 {
+        font-size: 24px;
+    }
+
+    .welcome-section p {
+        font-size: 16px;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+
+    .login-container {
+        padding: 20px;
+    }
+
+    .login-container h2 {
+        font-size: 24px;
+    }
+
+    .login-container input {
+        padding: 8px;
+        font-size: 14px;
+    }
+
+    .login-container button {
+        padding: 10px;
+        font-size: 14px;
+    }
 }

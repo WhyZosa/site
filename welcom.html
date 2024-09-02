@@ -5,20 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Добро пожаловать</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 </head>
 <body>
+    <!-- Шапка сайта с иконкой профиля -->
     <header>
-        <div class="avatar-container">
-            <img src="default-avatar.png" alt="Аватар" id="avatar" class="avatar">
+        <div class="logo">
+            <h2>Ваш Логотип</h2>
+        </div>
+        <div class="profile-menu">
+            <img src="default-avatar.png" alt="Аватар пользователя" id="profile-avatar" class="profile-avatar">
+            <div class="dropdown-menu" id="dropdown-menu">
+                <div class="user-info">
+                    <img src="default-avatar.png" alt="Аватар пользователя" id="dropdown-avatar" class="dropdown-avatar">
+                    <h3 id="user-name">Имя Пользователя</h3>
+                    <p id="user-email">email@example.com</p>
+                </div>
+                <ul>
+                    <li><a href="profile.html"><i class="fas fa-user"></i> Профиль</a></li>
+                    <li><a href="#" id="change-avatar-btn"><i class="fas fa-image"></i> Изменить аватар</a></li>
+                    <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Выйти</a></li>
+                </ul>
+                <input type="file" id="avatar-input" style="display: none;">
+            </div>
         </div>
     </header>
-    <div class="welcome-container">
-        <h1>Добро пожаловать, <span id="user-name"></span>!</h1>
-        <p>Вы вошли на сайт для прохождения курсов. Вы можете перейти в свой профиль или начать изучать курсы.</p>
-        <a href="profile.html" class="button">Перейти в профиль</a>
-        <a href="courses.html" class="button">Начать курсы</a>
-        <button id="logout" class="button">Выйти</button>
-    </div>
-    <script src="welcome.js"></script>
+
+    <!-- Основной контент страницы приветствия -->
+    <main>
+        <section class="welcome-section">
+            <h1>Добро пожаловать, <span id="welcome-user-name">Имя Пользователя</span>!</h1>
+            <p>Рады видеть вас на нашей платформе обучения. Начните изучать новые курсы прямо сейчас!</p>
+            <div class="buttons">
+                <a href="courses.html" class="btn primary-btn">Мои Курсы</a>
+                <a href="explore.html" class="btn secondary-btn">Исследовать Курсы</a>
+            </div>
+        </section>
+    </main>
+
+    <!-- Подключение скриптов -->
+    <script src="welcom.js"></script>
 </body>
 </html>
