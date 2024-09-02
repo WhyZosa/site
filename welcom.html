@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добро пожаловать</title>
+    <!-- Подключаем Animate.css для анимаций -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <!-- Подключаем основной файл стилей -->
+    <link rel="stylesheet" href="styles.css">
+    <!-- Подключаем Font Awesome для иконок -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <!-- Подключаем Google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+</head>
+<body class="animate__animated animate__fadeIn">
+
+    <!-- Header с логотипом и меню профиля -->
+    <header class="animate__animated animate__slideInDown">
+        <div class="logo">
+            <h2>MedSmart</h2>
+        </div>
+        <div class="profile-menu">
+            <img src="default-avatar.png" alt="Аватар пользователя" id="profile-avatar" class="profile-avatar animate__animated animate__zoomIn">
+            <div class="dropdown-menu" id="dropdown-menu">
+                <div class="user-info">
+                    <img src="default-avatar.png" alt="Аватар пользователя" id="dropdown-avatar" class="dropdown-avatar">
+                    <h3 id="user-name">Гость</h3> <!-- Изначально отображается "Гость" -->
+                    <p id="user-email" style="display: none;">email@example.com</p> <!-- Изначально скрываем почту -->
+                </div>
+                <ul>
+                    <li><a href="profile.html"><i class="fas fa-user"></i> Профиль</a></li>
+                    <li><a href="#" id="change-avatar-btn"><i class="fas fa-image"></i> Изменить аватар</a></li>
+                    <li><a href="#" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Выйти</a></li>
+                </ul>
+                <input type="file" id="avatar-input" style="display: none;">
+            </div>
+        </div>
+    </header>
+
+    <!-- Основной контент страницы -->
+    <main class="animate__animated animate__fadeInUp">
+        <section class="welcome-section">
+            <h1>Добро пожаловать, <span id="welcome-user-name">Гость</span>!</h1> <!-- Изначально отображается "Гость" -->
+            <p>Рады видеть вас на нашей образовательной платформе. Начните изучать новые курсы прямо сейчас!</p>
+            <div class="card-container">
+                <div class="card">
+                    <h2>Мои Курсы</h2>
+                    <div id="courses-container"></div> <!-- Контейнер для отображения курсов -->
+                </div>
+                <div class="card">
+                    <h2>Исследовать Курсы</h2>
+                    <p>Откройте для себя новые курсы и начните обучение сегодня.</p>
+                    <a href="explore.html" class="btn secondary-btn">Открыть новые курсы</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="welcom.js"></script>
+</body>
+</html>
