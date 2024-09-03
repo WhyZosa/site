@@ -280,6 +280,18 @@ main {
     margin-bottom: 30px;
 }
 
+/* Стили для выделения ссылки "войдите" */
+.highlight-link {
+    color: #007bff;
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+.highlight-link:hover {
+    color: #0056b3;
+    text-decoration: none;
+}
+
 .buttons {
     display: flex;
     justify-content: center;
