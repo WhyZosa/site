@@ -1,18 +1,28 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Получаем элементы страницы
     const userNameElement = document.getElementById('welcome-user-name');
     const coursesContainer = document.getElementById('courses-container');
     const userNameInDropdown = document.getElementById('user-name');
     const userEmailInDropdown = document.getElementById('user-email');
+    const profileMenu = document.querySelector('.profile-menu');
+    const dropdownMenu = document.getElementById('dropdown-menu');
+    const changeAvatarButton = document.getElementById('change-avatar-btn');
+    const avatarInput = document.getElementById('avatar-input');
+    const avatarImage = document.getElementById('profile-avatar');
+    const dropdownAvatar = document.getElementById('dropdown-avatar');
+    const logoutButton = document.getElementById('logout-btn');
+
+    // Получаем данные пользователя из localStorage
     const user = JSON.parse(localStorage.getItem('user'));
 
     if (user && user.name) {
-        // Если пользователь авторизован, отображаем его имя
+        // Если пользователь авторизован, отображаем его имя и email
         userNameElement.textContent = user.name;
         userNameInDropdown.textContent = user.name;
         userEmailInDropdown.textContent = user.email;
         userEmailInDropdown.style.display = 'block'; // Показываем почту
     } else {
-        // Если пользователь не авторизован, отображаем "Гость"
+        // Если пользователь не авторизован, отображаем "Гость" и скрываем email
         userNameElement.textContent = 'Гость';
         userNameInDropdown.textContent = 'Гость';
         userEmailInDropdown.style.display = 'none'; // Скрываем почту
@@ -31,13 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Логика работы с меню профиля
-    const profileMenu = document.querySelector('.profile-menu');
-    const dropdownMenu = document.getElementById('dropdown-menu');
-    const changeAvatarButton = document.getElementById('change-avatar-btn');
-    const avatarInput = document.getElementById('avatar-input');
-    const avatarImage = document.getElementById('profile-avatar');
-    const dropdownAvatar = document.getElementById('dropdown-avatar');
-
     profileMenu.addEventListener('click', () => {
         dropdownMenu.classList.toggle('active');
     });
@@ -48,6 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Изменение аватара пользователя
     changeAvatarButton.addEventListener('click', (event) => {
         event.preventDefault();
         if (user) {
@@ -67,5 +71,12 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             reader.readAsDataURL(file);
         }
+    });
+
+    // Логика выхода из системы
+    logoutButton.addEventListener('click', () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = 'index.html';
     });
 });
