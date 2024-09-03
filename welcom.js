@@ -1,43 +1,66 @@
 document.addEventListener('DOMContentLoaded', () => {
     const userNameElement = document.getElementById('welcome-user-name');
+    const coursesMessage = document.getElementById('courses-message');
     const coursesContainer = document.getElementById('courses-container');
     const userNameInDropdown = document.getElementById('user-name');
     const userEmailInDropdown = document.getElementById('user-email');
-    const user = JSON.parse(localStorage.getItem('user'));
+    const avatarInput = document.getElementById('avatar-input');
+    const profileAvatar = document.getElementById('profile-avatar');
+    const dropdownAvatar = document.getElementById('dropdown-avatar');
+    const dropdownMenu = document.getElementById('dropdown-menu');
+    const profileMenu = document.querySelector('.profile-menu');
+    const userToken = localStorage.getItem('token'); // Предположим, что токен хранится в localStorage
 
-    if (user && user.name) {
-        // Если пользователь авторизован, отображаем его имя
-        userNameElement.textContent = user.name;
-        userNameInDropdown.textContent = user.name;
-        userEmailInDropdown.textContent = user.email;
-        userEmailInDropdown.style.display = 'block'; // Показываем почту
-    } else {
-        // Если пользователь не авторизован, отображаем "Гость"
+    // Создание кнопки "Перейти в Мои Курсы"
+    const myCoursesBtn = document.createElement('a');
+    myCoursesBtn.href = "my-courses.html";
+    myCoursesBtn.className = "btn primary-btn";
+    myCoursesBtn.textContent = "Перейти в Мои Курсы";
+
+    // Проверка авторизации пользователя и загрузка данных с сервера
+    function getUserData() {
+        if (userToken) {
+            fetch('https://your-api.com/user-profile', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${userToken}`
+                }
+            })
+            .then(response => response.json())
+            .then(user => {
+                if (user.name) {
+                    userNameElement.textContent = user.name;
+                    userNameInDropdown.textContent = user.name;
+                    userEmailInDropdown.textContent = user.email;
+                    userEmailInDropdown.style.display = 'block';
+                    if (user.avatar) {
+                        profileAvatar.src = user.avatar;
+                        dropdownAvatar.src = user.avatar;
+                    }
+                    coursesMessage.textContent = ""; // Очистка сообщения
+                    coursesContainer.appendChild(myCoursesBtn); // Добавляем кнопку "Перейти в Мои Курсы"
+                } else {
+                    showGuestView();
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка при загрузке профиля:', error);
+                showGuestView();
+            });
+        } else {
+            showGuestView();
+        }
+    }
+
+    // Отображение вида для гостя
+    function showGuestView() {
         userNameElement.textContent = 'Гость';
         userNameInDropdown.textContent = 'Гость';
-        userEmailInDropdown.style.display = 'none'; // Скрываем почту
+        userEmailInDropdown.style.display = 'none';
+        coursesMessage.textContent = 'Пожалуйста, войдите, чтобы просмотреть ваши курсы.';
     }
 
-    // Отображение курсов пользователя
-    if (user && user.courses && user.courses.length > 0) {
-        user.courses.forEach(course => {
-            const courseElement = document.createElement('div');
-            courseElement.className = 'course-item';
-            courseElement.textContent = course.name;
-            coursesContainer.appendChild(courseElement);
-        });
-    } else {
-        coursesContainer.textContent = user ? 'У вас пока нет курсов.' : 'Пожалуйста, войдите, чтобы просмотреть ваши курсы.';
-    }
-
-    // Логика работы с меню профиля
-    const profileMenu = document.querySelector('.profile-menu');
-    const dropdownMenu = document.getElementById('dropdown-menu');
-    const changeAvatarButton = document.getElementById('change-avatar-btn');
-    const avatarInput = document.getElementById('avatar-input');
-    const avatarImage = document.getElementById('profile-avatar');
-    const dropdownAvatar = document.getElementById('dropdown-avatar');
-
+    // Обработка клика на аватар для открытия меню профиля
     profileMenu.addEventListener('click', () => {
         dropdownMenu.classList.toggle('active');
     });
@@ -48,24 +71,37 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    changeAvatarButton.addEventListener('click', (event) => {
-        event.preventDefault();
-        if (user) {
-            avatarInput.click();
-        } else {
-            alert('Пожалуйста, войдите, чтобы изменить аватар.');
-        }
-    });
-
+    // Обработка изменения аватара
     avatarInput.addEventListener('change', (event) => {
         const file = event.target.files[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                avatarImage.src = e.target.result;
-                dropdownAvatar.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
+            const formData = new FormData();
+            formData.append('avatar', file);
+
+            fetch('https://your-api.com/upload-avatar', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${userToken}`
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.avatarUrl) {
+                    profileAvatar.src = data.avatarUrl;
+                    dropdownAvatar.src = data.avatarUrl;
+                    alert('Аватар успешно обновлен!');
+                } else {
+                    alert('Ошибка при обновлении аватара: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка при загрузке аватара:', error);
+                alert('Произошла ошибка при загрузке аватара.');
+            });
         }
     });
+
+    // Загрузка данных пользователя при загрузке страницы
+    getUserData();
 });
