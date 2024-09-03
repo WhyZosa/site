@@ -1,52 +1,65 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    
-    if (!user) {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+
+    if (!token) {
         window.location.href = 'index.html';
         return;
     }
 
-    const profileForm = document.getElementById('profile-form');
-    const logoutButton = document.getElementById('logout');
+    fetch('https://your-api.com/user-profile', {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+    .then(response => response.json())
+    .then(user => {
+        if (!user) {
+            window.location.href = 'index.html';
+            return;
+        }
 
-    // Заполняем форму данными пользователя
-    document.getElementById('profile-name').value = user.name;
-    document.getElementById('profile-email').value = user.email;
+        // Заполняем форму данными пользователя
+        document.getElementById('profile-name').value = user.name;
+        document.getElementById('profile-email').value = user.email;
 
-    profileForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const name = document.getElementById('profile-name').value;
-        const email = document.getElementById('profile-email').value;
+        const profileForm = document.getElementById('profile-form');
+        const logoutButton = document.getElementById('logout');
 
-        // Имитация обновления данных на сервере
-        fetch('https://your-api.com/update-profile', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
-            body: JSON.stringify({ name, email })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Обновляем данные в localStorage
-                user.name = name;
-                user.email = email;
-                localStorage.setItem('user', JSON.stringify(user));
-                alert('Профиль обновлен!');
-            } else {
-                alert('Ошибка при обновлении профиля: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Ошибка при обновлении профиля:', error);
+        profileForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('profile-name').value;
+            const email = document.getElementById('profile-email').value;
+
+            // Обновление данных пользователя на сервере
+            fetch('https://your-api.com/update-profile', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ name, email })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Профиль обновлен!');
+                } else {
+                    alert('Ошибка при обновлении профиля: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка при обновлении профиля:', error);
+            });
         });
-    });
 
-    logoutButton.addEventListener('click', function() {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        logoutButton.addEventListener('click', function() {
+            window.location.href = 'index.html';
+        });
+    })
+    .catch(error => {
+        console.error('Ошибка при загрузке профиля:', error);
         window.location.href = 'index.html';
     });
 });

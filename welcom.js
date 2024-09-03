@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Получаем элементы страницы
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
     const userNameElement = document.getElementById('welcome-user-name');
     const coursesContainer = document.getElementById('courses-container');
     const userNameInDropdown = document.getElementById('user-name');
@@ -12,32 +13,51 @@ document.addEventListener('DOMContentLoaded', () => {
     const dropdownAvatar = document.getElementById('dropdown-avatar');
     const logoutButton = document.getElementById('logout-btn');
 
-    // Получаем данные пользователя из localStorage
-    const user = JSON.parse(localStorage.getItem('user'));
+    if (token) {
+        fetch('https://your-api.com/user-profile', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(response => response.json())
+        .then(user => {
+            if (!user) {
+                showGuestView();
+                return;
+            }
 
-    if (user && user.name) {
-        // Если пользователь авторизован, отображаем его имя и email
-        userNameElement.textContent = user.name;
-        userNameInDropdown.textContent = user.name;
-        userEmailInDropdown.textContent = user.email;
-        userEmailInDropdown.style.display = 'block'; // Показываем почту
-    } else {
-        // Если пользователь не авторизован, отображаем "Гость" и скрываем email
-        userNameElement.textContent = 'Гость';
-        userNameInDropdown.textContent = 'Гость';
-        userEmailInDropdown.style.display = 'none'; // Скрываем почту
-    }
+            // Отображаем данные пользователя
+            userNameElement.textContent = user.name;
+            userNameInDropdown.textContent = user.name;
+            userEmailInDropdown.textContent = user.email;
+            userEmailInDropdown.style.display = 'block';
 
-    // Отображение курсов пользователя
-    if (user && user.courses && user.courses.length > 0) {
-        user.courses.forEach(course => {
-            const courseElement = document.createElement('div');
-            courseElement.className = 'course-item';
-            courseElement.textContent = course.name;
-            coursesContainer.appendChild(courseElement);
+            // Отображение курсов пользователя
+            if (user.courses && user.courses.length > 0) {
+                user.courses.forEach(course => {
+                    const courseElement = document.createElement('div');
+                    courseElement.className = 'course-item';
+                    courseElement.textContent = course.name;
+                    coursesContainer.appendChild(courseElement);
+                });
+            } else {
+                coursesContainer.textContent = 'У вас пока нет курсов.';
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка при загрузке данных пользователя:', error);
+            showGuestView(); // В случае ошибки отображаем гостевой интерфейс
         });
     } else {
-        coursesContainer.textContent = user ? 'У вас пока нет курсов.' : 'Пожалуйста, войдите, чтобы просмотреть ваши курсы.';
+        showGuestView(); // Если токена нет, отображаем гостевой интерфейс
+    }
+
+    function showGuestView() {
+        userNameElement.textContent = 'Гость';
+        userNameInDropdown.textContent = 'Гость';
+        userEmailInDropdown.style.display = 'none';
+        coursesContainer.textContent = 'Пожалуйста, войдите, чтобы просмотреть ваши курсы.';
     }
 
     // Логика работы с меню профиля
@@ -54,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Изменение аватара пользователя
     changeAvatarButton.addEventListener('click', (event) => {
         event.preventDefault();
-        if (user) {
+        if (token) {
             avatarInput.click();
         } else {
             alert('Пожалуйста, войдите, чтобы изменить аватар.');
@@ -75,8 +95,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Логика выхода из системы
     logoutButton.addEventListener('click', () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
         window.location.href = 'index.html';
     });
 });
