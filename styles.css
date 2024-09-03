@@ -11,7 +11,6 @@ body {
     color: #333;
 }
 
-/* Стили для контейнеров */
 .container, .login-container {
     background-color: #ffffff;
     padding: 40px;
@@ -24,6 +23,49 @@ body {
     margin-top: 50px;
 }
 
+.login-container {
+    max-width: 380px; /* Чтобы форма входа не была слишком широкой */
+}
+
+/* Темная тема */
+body.dark-theme {
+    background: linear-gradient(120deg, #2b2b2b, #121212);
+    color: #ffffff;
+}
+
+body.dark-theme .container, 
+body.dark-theme .login-container, 
+body.dark-theme .welcome-section, 
+body.dark-theme .card {
+    background-color: #1f1f1f;
+    color: #ffffff;
+    box-shadow: none;
+}
+
+body.dark-theme .btn, 
+body.dark-theme .primary-btn, 
+body.dark-theme .secondary-btn {
+    background-color: #007bff;
+    color: #ffffff;
+}
+
+body.dark-theme .btn:hover, 
+body.dark-theme .primary-btn:hover, 
+body.dark-theme .secondary-btn:hover {
+    background-color: #0056b3;
+}
+
+body.dark-theme .input {
+    background-color: #333;
+    color: #ffffff;
+    border: 1px solid #555;
+}
+
+body.dark-theme .input::placeholder {
+    color: #ccc;
+}
+
+/* Остальные стили */
 .card-container {
     display: flex;
     justify-content: center;
@@ -58,14 +100,12 @@ body {
     margin-bottom: 20px;
 }
 
-/* Стили заголовков */
 h1 {
     font-size: 28px;
     color: #333;
     margin-bottom: 20px;
 }
 
-/* Стили форм */
 form {
     display: flex;
     flex-direction: column;
@@ -76,6 +116,7 @@ label {
     align-self: flex-start;
     margin-bottom: 5px;
     font-weight: bold;
+    color: #333;
 }
 
 .input {
@@ -85,10 +126,8 @@ label {
     border-radius: 5px;
     font-size: 16px;
     width: 100%;
-    max-width: 320px;
 }
 
-/* Стили кнопок */
 .btn {
     padding: 12px;
     background-color: #007bff;
@@ -99,7 +138,6 @@ label {
     cursor: pointer;
     transition: background-color 0.3s ease;
     width: 100%;
-    max-width: 320px;
 }
 
 .btn:hover {
@@ -306,6 +344,35 @@ main {
 .secondary-btn:hover {
     background-color: #5a6268;
     transform: translateY(-2px);
+}
+
+/* Стили для секции настроек */
+#settings {
+    margin-top: 20px;
+    text-align: left;
+}
+
+#settings h2 {
+    font-size: 24px;
+    color: #007bff;
+    margin-bottom: 20px;
+}
+
+#settings label {
+    font-size: 16px;
+    color: #333;
+    display: block;
+    margin-bottom: 10px;
+}
+
+#settings select {
+    padding: 10px;
+    width: 100%;
+    max-width: 320px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
 }
 
 /* Адаптивность */
