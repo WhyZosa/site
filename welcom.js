@@ -26,7 +26,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Authorization': `Bearer ${userToken}`
                 }
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Сервер вернул ошибку');
+                }
+                return response.json();
+            })
             .then(user => {
                 if (user.name) {
                     userNameElement.textContent = user.name;
@@ -57,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
         userNameElement.textContent = 'Гость';
         userNameInDropdown.textContent = 'Гость';
         userEmailInDropdown.style.display = 'none';
-        coursesMessage.textContent = 'Пожалуйста, войдите, чтобы просмотреть ваши курсы.';
+        coursesMessage.innerHTML = 'Пожалуйста, <a href="index.html" class="highlight-link">войдите</a>, чтобы просмотреть ваши курсы.';
     }
 
     // Обработка клика на аватар для открытия меню профиля

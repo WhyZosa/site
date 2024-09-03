@@ -282,14 +282,14 @@ main {
 
 /* Стили для выделения ссылки "войдите" */
 .highlight-link {
-    color: #007bff;
-    text-decoration: underline;
-    font-weight: bold;
+    color: #007bff !important;
+    text-decoration: underline !important;
+    font-weight: bold !important;
 }
 
 .highlight-link:hover {
-    color: #0056b3;
-    text-decoration: none;
+    color: #0056b3 !important;
+    text-decoration: none !important;
 }
 
 .buttons {
