@@ -35,19 +35,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('analyze-btn').addEventListener('click', function() {
         window.location.href = 'analyze.html'; // Перенаправление на страницу анализа
     });
-
-    // Обработка загрузки файла
-    document.getElementById('upload-file-btn').addEventListener('click', function() {
-        const fileInput = document.getElementById('file-input');
-        if (fileInput.files.length === 0) {
-            alert('Пожалуйста, выберите файл.');
-            return;
-        }
-
-        const file = fileInput.files[0];
-        console.log("Файл выбран:", file.name);
-        uploadFile(file, token);
-    });
 });
 
 // Функция для отображения интерфейса для неавторизованных пользователей
@@ -86,33 +73,5 @@ function loadUserProfile(token) {
     .catch(error => {
         console.error('Ошибка при загрузке профиля:', error);
         showGuestView(); // Показываем интерфейс для гостей при ошибке
-    });
-}
-
-// Функция для загрузки файла на сервер
-function uploadFile(file, token) {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    fetch('https://your-api.com/upload-file', {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${token}`
-        },
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log("Ответ сервера после загрузки файла:", data);
-        if (data.success) {
-            alert('Файл успешно загружен и обработан!');
-            window.location.href = 'dashboard.html'; // Перенаправление на дашборд
-        } else {
-            alert('Ошибка при загрузке файла: ' + data.message);
-        }
-    })
-    .catch(error => {
-        console.error('Ошибка при загрузке файла:', error);
-        alert('Произошла ошибка при загрузке файла.');
     });
 }
