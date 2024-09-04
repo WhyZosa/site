@@ -15,7 +15,7 @@
         }
 
         .login-container {
-            max-width: 400px;
+            max-width: 600px; /* Увеличиваем ширину для размещения графика */
             margin: 50px auto;
             padding: 20px;
             background-color: #fff;
@@ -60,21 +60,10 @@
             background-color: #0056b3;
         }
 
-        /* Стиль для контейнера графика */
-        #dashboard-container {
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 20px;
-            background-color: #fff;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            text-align: center;
-        }
-
         /* Адаптивный холст для графика */
-        canvas {
+        #chart {
             width: 100% !important;
-            height: auto !important;
+            height: 300px !important; /* Высота графика фиксированная */
         }
     </style>
 </head>
@@ -88,9 +77,7 @@
             <button type="submit" class="btn">Отправить файл</button>
         </form>
         <p id="upload-error" class="error-message"></p>
-    </div>
 
-    <div id="dashboard-container">
         <h2>График анализа данных</h2>
         <canvas id="chart"></canvas>
     </div>

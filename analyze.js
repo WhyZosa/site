@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('file-upload-form');
     const fileInput = document.getElementById('file-input');
     const errorMessage = document.getElementById('upload-error');
-    const dashboardContainer = document.getElementById('dashboard-container');
+    const dashboardContainer = document.getElementById('chart');
 
     form.addEventListener('submit', function(event) {
         event.preventDefault(); // Остановить отправку формы
@@ -38,9 +38,9 @@ document.addEventListener('DOMContentLoaded', () => {
             window.chartInstance.destroy();
         }
 
-        // Создаем новый адаптивный график
+        // Создаем новый столбчатый график
         window.chartInstance = new Chart(ctx, {
-            type: 'bar',
+            type: 'bar', // Столбчатый график
             data: {
                 labels: labels,
                 datasets: [{
@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             options: {
                 responsive: true, // Адаптивность графика
-                maintainAspectRatio: false, // Отключаем сохранение пропорций
+                maintainAspectRatio: true, // Сохраняем пропорции графика
                 scales: {
                     y: {
                         beginAtZero: true
