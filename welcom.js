@@ -1,109 +1,118 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const userNameElement = document.getElementById('welcome-user-name');
-    const coursesMessage = document.getElementById('courses-message');
-    const coursesContainer = document.getElementById('courses-container');
-    const userNameInDropdown = document.getElementById('user-name');
-    const userEmailInDropdown = document.getElementById('user-email');
-    const avatarInput = document.getElementById('avatar-input');
-    const profileAvatar = document.getElementById('profile-avatar');
-    const dropdownAvatar = document.getElementById('dropdown-avatar');
-    const dropdownMenu = document.getElementById('dropdown-menu');
+    const token = localStorage.getItem('token');
     const profileMenu = document.querySelector('.profile-menu');
-    const userToken = localStorage.getItem('token'); // Токен для авторизации
-    
-    // Форма для загрузки файла
-    const fileUploadContainer = document.getElementById('file-upload-container');
-    const fileInput = document.getElementById('file-input');
-    const uploadFileBtn = document.getElementById('upload-file-btn');
-    const analyzeBtn = document.getElementById('analyze-btn');
+    const dropdownMenu = document.getElementById('dropdown-menu');
 
-    // Проверка авторизации пользователя
-    function getUserData() {
-        if (userToken) {
-            fetch('https://your-api.com/user-profile', {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${userToken}`
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Сервер вернул ошибку');
-                }
-                return response.json();
-            })
-            .then(user => {
-                if (user.name) {
-                    userNameElement.textContent = user.name;
-                    userNameInDropdown.textContent = user.name;
-                    userEmailInDropdown.textContent = user.email;
-                    userEmailInDropdown.style.display = 'block';
-                    if (user.avatar) {
-                        profileAvatar.src = user.avatar;
-                        dropdownAvatar.src = user.avatar;
-                    }
-                    coursesMessage.style.display = 'none'; // Скрываем сообщение для гостей
-                    coursesContainer.style.display = 'flex'; // Показываем кнопки
-                } else {
-                    showGuestView();
-                }
-            })
-            .catch(error => {
-                console.error('Ошибка при загрузке профиля:', error);
-                showGuestView();
-            });
-        } else {
-            showGuestView();
+    // Проверка авторизации
+    if (!token) {
+        console.log("Пользователь не авторизован. Показываем гостевой интерфейс.");
+        showGuestView(); // Показываем интерфейс для неавторизованных
+    } else {
+        console.log("Пользователь авторизован. Загружаем профиль.");
+        loadUserProfile(token); // Загружаем профиль пользователя
+    }
+
+    // Открытие и закрытие меню профиля
+    profileMenu.addEventListener('click', () => {
+        dropdownMenu.classList.toggle('active');
+    });
+
+    // Закрытие меню, если пользователь кликает вне его
+    document.addEventListener('click', (event) => {
+        if (!profileMenu.contains(event.target) && dropdownMenu.classList.contains('active')) {
+            dropdownMenu.classList.remove('active');
         }
-    }
+    });
 
-    // Отображение вида для гостя
-    function showGuestView() {
-        userNameElement.textContent = 'Гость';
-        userNameInDropdown.textContent = 'Гость';
-        userEmailInDropdown.style.display = 'none';
-        coursesMessage.innerHTML = 'Пожалуйста, <a href="index.html" class="highlight-link">войдите</a>, чтобы просмотреть ваши курсы.';
-        coursesContainer.style.display = 'none'; // Скрываем кнопки для гостей
-    }
+    // Логика выхода из системы
+    document.getElementById('logout-btn').addEventListener('click', function() {
+        localStorage.clear(); // Удаляем токен
+        window.location.href = 'index.html'; // Перенаправление на страницу входа
+    });
 
-    // Обработка клика на кнопку "Проанализировать"
-    analyzeBtn.addEventListener('click', () => {
+    // Обработка нажатия на кнопку "Проанализировать"
+    document.getElementById('analyze-btn').addEventListener('click', function() {
+        const fileUploadContainer = document.getElementById('file-upload-container');
         fileUploadContainer.style.display = 'block'; // Показать форму для загрузки файла
     });
 
-    // Обработка отправки файла на сервер
-    uploadFileBtn.addEventListener('click', () => {
-        const file = fileInput.files[0];
-        if (!file) {
-            alert('Выберите файл.');
+    // Обработка загрузки файла
+    document.getElementById('upload-file-btn').addEventListener('click', function() {
+        const fileInput = document.getElementById('file-input');
+        if (fileInput.files.length === 0) {
+            alert('Пожалуйста, выберите файл.');
             return;
         }
 
-        const formData = new FormData();
-        formData.append('file', file);
-
-        fetch('https://your-api.com/analyze-excel', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${userToken}`
-            },
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Файл успешно загружен и обработан!');
-                window.location.href = 'dashboard.html'; // Перенаправление на дашборд
-            } else {
-                alert('Ошибка при анализе файла: ' + data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Ошибка при загрузке файла:', error);
-            alert('Произошла ошибка при загрузке файла.');
-        });
+        const file = fileInput.files[0];
+        console.log("Файл выбран:", file.name);
+        uploadFile(file, token);
     });
-
-    // Загрузка данных пользователя при загрузке страницы
-    getUserData();
 });
+
+// Функция для отображения интерфейса для неавторизованных пользователей
+function showGuestView() {
+    document.getElementById('welcome-user-name').textContent = 'Гость';
+    document.getElementById('courses-message').style.display = 'block'; // Показываем сообщение для гостей
+    document.getElementById('courses-container').style.display = 'none'; // Скрываем кнопки для авторизованных
+    console.log("Интерфейс для гостей показан.");
+}
+
+// Функция для загрузки профиля пользователя
+function loadUserProfile(token) {
+    fetch('https://your-api.com/profile', {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}` // Используем токен для загрузки профиля
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Ответ сервера:", data);
+        if (data.success) {
+            document.getElementById('welcome-user-name').textContent = data.user.name;
+            document.getElementById('profile-avatar').src = data.user.avatar || 'default-avatar.png';
+            document.getElementById('user-name').textContent = data.user.name;
+            document.getElementById('user-email').textContent = data.user.email;
+            document.getElementById('user-email').style.display = 'block';
+            document.getElementById('courses-message').style.display = 'none'; // Скрываем сообщение для гостей
+            document.getElementById('courses-container').style.display = 'flex'; // Показываем кнопки для авторизованных
+            console.log("Профиль пользователя загружен успешно.");
+        } else {
+            alert('Ошибка при загрузке профиля: ' + data.message);
+            showGuestView(); // Показываем интерфейс для гостей при ошибке
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка при загрузке профиля:', error);
+        showGuestView(); // Показываем интерфейс для гостей при ошибке
+    });
+}
+
+// Функция для загрузки файла на сервер
+function uploadFile(file, token) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    fetch('https://your-api.com/upload-file', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Ответ сервера после загрузки файла:", data);
+        if (data.success) {
+            alert('Файл успешно загружен и обработан!');
+            window.location.href = 'dashboard.html'; // Перенаправление на дашборд
+        } else {
+            alert('Ошибка при загрузке файла: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка при загрузке файла:', error);
+        alert('Произошла ошибка при загрузке файла.');
+    });
+}

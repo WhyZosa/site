@@ -4,20 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MedSmart</title>
-    <!-- Подключаем favicon -->
     <link rel="icon" type="image/png" href="logo.png">
-    <!-- Подключаем Animate.css для анимаций -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-    <!-- Подключаем основной файл стилей -->
     <link rel="stylesheet" href="styles.css">
-    <!-- Подключаем Font Awesome для иконок -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    <!-- Подключаем Google Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
 </head>
 <body class="animate__animated animate__fadeIn">
 
-    <!-- Header с логотипом и меню профиля -->
     <header class="animate__animated animate__slideInDown">
         <div class="logo">
             <img src="logo.png" alt="Логотип MedSmart" class="logo-icon">
@@ -41,19 +35,14 @@
         </div>
     </header>
     
-    <!-- Основной контент страницы -->
     <main class="animate__animated animate__fadeInUp">
         <section class="welcome-section">
             <h1>Добро пожаловать, <span id="welcome-user-name">Гость</span>!</h1>
             <p id="courses-message">Пожалуйста, <a href="index.html" class="highlight-link">войдите</a>, чтобы просмотреть ваши курсы.</p>
-            
-            <!-- Контейнер для кнопок -->
             <div id="courses-container" class="buttons-container" style="display: none;">
                 <a href="my-courses.html" class="btn primary-btn" id="my-courses-btn">Мои Курсы</a>
                 <a href="explore-courses.html" class="btn secondary-btn" id="explore-courses-btn">Исследовать Курсы</a>
                 <button class="btn primary-btn" id="analyze-btn">Проанализировать</button>
-                
-                <!-- Форма для загрузки файла -->
                 <div id="file-upload-container" style="display: none;">
                     <input type="file" id="file-input" accept=".xlsx" class="btn">
                     <button id="upload-file-btn" class="btn"><i class="fas fa-upload"></i> Отправить файл</button>
