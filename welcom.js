@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const token = localStorage.getItem('token');
     const profileMenu = document.querySelector('.profile-menu');
     const dropdownMenu = document.getElementById('dropdown-menu');
+    const fileUploadContainer = document.getElementById('file-upload-container');
 
     // Проверка авторизации
     if (!token) {
@@ -30,10 +31,9 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.href = 'index.html'; // Перенаправление на страницу входа
     });
 
-    // Обработка нажатия на кнопку "Проанализировать"
+    // Обработка нажатия на кнопку "Анализировать"
     document.getElementById('analyze-btn').addEventListener('click', function() {
-        const fileUploadContainer = document.getElementById('file-upload-container');
-        fileUploadContainer.style.display = 'block'; // Показать форму для загрузки файла
+        window.location.href = 'analyze.html'; // Перенаправление на страницу анализа
     });
 
     // Обработка загрузки файла
