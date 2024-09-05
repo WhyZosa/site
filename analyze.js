@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('file-upload-form');
     const fileInput = document.getElementById('file-input');
     const errorMessage = document.getElementById('upload-error');
-    const dashboardContainer = document.getElementById('chart');
+    const chartContainer = document.getElementById('chart');
 
     form.addEventListener('submit', function(event) {
         event.preventDefault(); // Остановить отправку формы
@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             options: {
                 responsive: true, // Адаптивность графика
-                maintainAspectRatio: true, // Сохраняем пропорции графика
+                maintainAspectRatio: false, // График может адаптироваться по высоте и ширине
                 scales: {
                     y: {
                         beginAtZero: true

@@ -4,72 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Загрузить файл для анализа</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-    <style>
-        /* Основной стиль для страницы и формы */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-        }
-
-        .login-container {
-            max-width: 600px; /* Увеличиваем ширину для размещения графика */
-            margin: 50px auto;
-            padding: 20px;
-            background-color: #fff;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-        }
-
-        h1 {
-            font-size: 1.5rem;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        label {
-            font-size: 1rem;
-            margin-bottom: 10px;
-            display: block;
-        }
-
-        .input {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 20px;
-            font-size: 1rem;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 10px;
-            font-size: 1rem;
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .btn:hover {
-            background-color: #0056b3;
-        }
-
-        /* Адаптивный холст для графика */
-        #chart {
-            width: 100% !important;
-            height: 300px !important; /* Высота графика фиксированная */
-        }
-    </style>
+    <link rel="stylesheet" href="analyze.css">
 </head>
 <body>
 
-    <div class="login-container">
+    <!-- Блок для формы загрузки файла -->
+    <div class="container">
         <h1>Загрузить файл для анализа</h1>
         <form id="file-upload-form" enctype="multipart/form-data">
             <label for="file-input">Выберите файл (XLS, XLSX, CSV):</label>
@@ -77,8 +17,10 @@
             <button type="submit" class="btn">Отправить файл</button>
         </form>
         <p id="upload-error" class="error-message"></p>
+    </div>
 
-        <h2>График анализа данных</h2>
+    <!-- Отдельный блок для графика, занимающий весь экран -->
+    <div id="chart-container">
         <canvas id="chart"></canvas>
     </div>
 
