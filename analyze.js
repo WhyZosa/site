@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Пример данных для отображения (замените на реальную обработку данных при необходимости)
         const exampleData = [
             { "label": "Январь", "value": 30 },
-            { "label": "Февраль", "value": 50 },
+            { "label": "Февраль", "value": 1990 },
             { "label": "Март", "value": 40 }
         ];
 
