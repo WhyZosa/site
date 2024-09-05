@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (email && password) {
                 // Отправка данных на сервер для проверки
+                console.log(token)
                 fetch('http://127.0.0.1:8000/api/users/login/', {
                     method: 'POST',
                     headers: {
@@ -27,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(data => {
                     if (data) {
                         const token=data.user.token.split("'")[1]
-                        console.log(token)
+
                         localStorage.setItem('token',token);
                         window.location.href = '/';
                     } else {

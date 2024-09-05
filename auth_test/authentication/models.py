@@ -81,7 +81,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         """ Строковое представление модели (отображается в консоли) """
-        return self.email
+        return str(self.email)
 
     @property
     def token(self):
@@ -115,5 +115,5 @@ class User(AbstractBaseUser, PermissionsMixin):
             'id': self.pk,
             'exp': int(dt.timestamp()),
         }, settings.SECRET_KEY, algorithm='HS256',)
-        print(jwt.decode(token.decode('utf-8'),settings.SECRET_KEY))
+        # print(jwt.decode(token.decode('utf-8'),settings.SECRET_KEY))
         return token
