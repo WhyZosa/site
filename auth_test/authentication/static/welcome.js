@@ -28,12 +28,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Логика выхода из системы
     document.getElementById('logout-btn').addEventListener('click', function() {
         localStorage.clear(); // Удаляем токен
-        window.location.href = 'index.html'; // Перенаправление на страницу входа
+        window.location.href = '/'; // Перенаправление на страницу входа
     });
 
     // Обработка нажатия на кнопку "Анализировать"
     document.getElementById('analyze-btn').addEventListener('click', function() {
-        window.location.href = 'analyze.html'; // Перенаправление на страницу анализа
+        window.location.href = 'analyze'; // Перенаправление на страницу анализа
     });
 });
 
@@ -47,31 +47,31 @@ function showGuestView() {
 
 // Функция для загрузки профиля пользователя
 function loadUserProfile(token) {
-    fetch('https://your-api.com/profile', {
+console.log(token)
+    fetch('http://127.0.0.1:8000/api/user/', {
         method: 'GET',
         headers: {
-            'Authorization': `Bearer ${token}` // Используем токен для загрузки профиля
+            'Content-Type': 'application/json',
+            'Authorization': `Token ${token}` // Используем токен для загрузки профиля
         }
     })
     .then(response => response.json())
     .then(data => {
         console.log("Ответ сервера:", data);
-        if (data.success) {
-            document.getElementById('welcome-user-name').textContent = data.user.name;
-            document.getElementById('profile-avatar').src = data.user.avatar || 'default-avatar.png';
-            document.getElementById('user-name').textContent = data.user.name;
+        if (data&&data.user.username) {
+            document.getElementById('welcome-user-name').textContent = data.user.username;
+            document.getElementById('user-name').textContent = data.user.username;
             document.getElementById('user-email').textContent = data.user.email;
             document.getElementById('user-email').style.display = 'block';
             document.getElementById('courses-message').style.display = 'none'; // Скрываем сообщение для гостей
             document.getElementById('courses-container').style.display = 'flex'; // Показываем кнопки для авторизованных
             console.log("Профиль пользователя загружен успешно.");
         } else {
-            alert('Ошибка при загрузке профиля: ' + data.message);
             showGuestView(); // Показываем интерфейс для гостей при ошибке
         }
     })
     .catch(error => {
-        console.error('Ошибка при загрузке профиля:', error);
+        console.error('Ошибка при загрузке профиля:', token);
         showGuestView(); // Показываем интерфейс для гостей при ошибке
     });
 }

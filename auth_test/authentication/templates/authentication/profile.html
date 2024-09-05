@@ -1,11 +1,12 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Профиль пользователя</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
 </head>
 <body class="animate__animated animate__fadeIn">
     <div class="container animate__animated animate__fadeInUp">
@@ -21,6 +22,6 @@
         </form>
         <button id="logout" class="button animate__animated animate__fadeIn">Выйти</button>
     </div>
-    <script src="profile.js"></script>
+    <script src="{% static 'profile.js' %}"></script>
 </body>
 </html>

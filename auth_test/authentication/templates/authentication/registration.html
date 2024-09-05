@@ -1,18 +1,19 @@
 <!DOCTYPE html>
-<html lang="ru">
+{% load static %}
+{% csrf_token %}
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Регистрация</title>
-    <!-- Подключаем Animate.css для анимаций -->
+    <!-- Подключаем Animate.analyze.css для анимаций -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <!-- Подключаем основной файл стилей -->
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
 </head>
 <body class="login-page animate__animated animate__fadeIn">
     <div class="login-container">
         <h1 class="animate__animated animate__bounceIn">Регистрация</h1>
-        <form id="registration-form" class="animate__animated animate__fadeInUp">
+        <form id="registration-form" class="animate__animated animate__fadeInUp">{% csrf_token %}
             <label for="registration-name">Имя:</label>
             <input type="text" id="registration-name" name="name" class="input" required>
 
@@ -24,9 +25,9 @@
 
             <button type="submit" class="btn animate__animated animate__pulse animate__infinite">Зарегистрироваться</button>
         </form>
-        <p class="switch-link">Уже зарегистрированы? <a href="index.html">Войти</a></p>
+        <p class="switch-link">Уже зарегистрированы? <a href="log">Войти</a></p>
         <p id="registration-error" class="error-message"></p>
     </div>
-    <script src="script.js"></script>
+    <script src="{% static 'script.js' %}"></script>
 </body>
 </html>
