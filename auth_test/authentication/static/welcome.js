@@ -1,78 +1,77 @@
-document.addEventListener('DOMContentLoaded', function() {
-     const userNameElement = document.getElementById('welcome-user-name');
-    const coursesMessage = document.getElementById('courses-message');
-    const coursesContainer = document.getElementById('courses-container');
-    const userNameInDropdown = document.getElementById('user-name');
-    const userEmailInDropdown = document.getElementById('user-email');
-    const avatarInput = document.getElementById('avatar-input');
-    const profileAvatar = document.getElementById('profile-avatar');
-    const dropdownAvatar = document.getElementById('dropdown-avatar');
-    const dropdownMenu = document.getElementById('dropdown-menu');
-    const profileMenu = document.querySelector('.profile-menu');
+document.addEventListener('DOMContentLoaded', () => {
     const token = localStorage.getItem('token');
+    const profileMenu = document.querySelector('.profile-menu');
+    const dropdownMenu = document.getElementById('dropdown-menu');
+    const fileUploadContainer = document.getElementById('file-upload-container');
 
-    function updateUserNameAndEmail(name, email) {
-        document.getElementById('user-name').textContent = name || 'Гость';
-        document.getElementById('welcome-user-name').textContent = name || 'Гость';
-        document.getElementById('user-email').textContent = email || '';
-        document.getElementById('user-email').style.display = email ? 'block' : 'none';
-        userNameInDropdown.value = name || 'Гость';
-        userEmailInDropdown.value = email || '';
+    // Проверка авторизации
+    if (!token) {
+        console.log("Пользователь не авторизован. Показываем гостевой интерфейс.");
+        showGuestView(); // Показываем интерфейс для неавторизованных
+    } else {
+        console.log("Пользователь авторизован. Загружаем профиль.");
+        loadUserProfile(token); // Загружаем профиль пользователя
     }
-    profileAvatar.addEventListener('click', () => {
-        dropdownMenu.style.display="block"
+
+    // Открытие и закрытие меню профиля
+    profileMenu.addEventListener('click', () => {
         dropdownMenu.classList.toggle('active');
     });
 
-    const myCoursesBtn = document.createElement('a');
-    myCoursesBtn.href = "/courses";
-    myCoursesBtn.className = "btn primary-btn";
-    myCoursesBtn.textContent = "Перейти в Мои Курсы";
-
-    if (token) {
-        fetch('http://127.0.0.1:8000/api/user/', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Token ${token}`
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data) {
-                console.log(data)
-                updateUserNameAndEmail(data.user.username,data.user.email)
-                if (data.user.avatarUrl) {
-                    avatar.src = data.user.avatarUrl;
-                }
-                coursesMessage.textContent = ""; // Очистка сообщения
-                coursesContainer.appendChild(myCoursesBtn);
-                console.log(coursesMessage.textContent)
-            } else {
-                showGuestView()
-            }
-        })
-        .catch(error => {
-            console.error('Ошибка при проверке токена:', error);
-            //localStorage.removeItem('token');
-        });
-    }
-
-    logoutButton.addEventListener('click', function() {
-        localStorage.removeItem('token');
-    });
-
+    // Закрытие меню, если пользователь кликает вне его
     document.addEventListener('click', (event) => {
         if (!profileMenu.contains(event.target) && dropdownMenu.classList.contains('active')) {
             dropdownMenu.classList.remove('active');
-            dropdownMenu.style.display="none"
         }
     });
-    function showGuestView() {
-        userNameElement.textContent = 'Гость';
-        userNameInDropdown.textContent = 'Гость';
-        userEmailInDropdown.style.display = 'none';
-        coursesMessage.innerHTML = 'Пожалуйста, <a href="index.html" class="highlight-link">войдите</a>, чтобы просмотреть ваши курсы.';
-    }
+
+    // Логика выхода из системы
+    document.getElementById('logout-btn').addEventListener('click', function() {
+        localStorage.clear(); // Удаляем токен
+        window.location.href = '/'; // Перенаправление на страницу входа
+    });
+
+    // Обработка нажатия на кнопку "Анализировать"
+    document.getElementById('analyze-btn').addEventListener('click', function() {
+        window.location.href = 'analyze'; // Перенаправление на страницу анализа
+    });
 });
 
+// Функция для отображения интерфейса для неавторизованных пользователей
+function showGuestView() {
+    document.getElementById('welcome-user-name').textContent = 'Гость';
+    document.getElementById('courses-message').style.display = 'block'; // Показываем сообщение для гостей
+    document.getElementById('courses-container').style.display = 'none'; // Скрываем кнопки для авторизованных
+    console.log("Интерфейс для гостей показан.");
+}
+
+// Функция для загрузки профиля пользователя
+function loadUserProfile(token) {
+console.log(token)
+    fetch('http://127.0.0.1:8000/api/user/', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Token ${token}` // Используем токен для загрузки профиля
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Ответ сервера:", data);
+        if (data&&data.user.username) {
+            document.getElementById('welcome-user-name').textContent = data.user.username;
+            document.getElementById('user-name').textContent = data.user.username;
+            document.getElementById('user-email').textContent = data.user.email;
+            document.getElementById('user-email').style.display = 'block';
+            document.getElementById('courses-message').style.display = 'none'; // Скрываем сообщение для гостей
+            document.getElementById('courses-container').style.display = 'flex'; // Показываем кнопки для авторизованных
+            console.log("Профиль пользователя загружен успешно.");
+        } else {
+            showGuestView(); // Показываем интерфейс для гостей при ошибке
+        }
+    })
+    .catch(error => {
+        console.error('Ошибка при загрузке профиля:', token);
+        showGuestView(); // Показываем интерфейс для гостей при ошибке
+    });
+}
