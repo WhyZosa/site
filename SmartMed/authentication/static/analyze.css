@@ -1,0 +1,159 @@
+/* Общий стиль для всего body */
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f7f9fc;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+/* Основной контейнер для формы */
+.container {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 80%;
+    max-width: 600px;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+/* Основной заголовок */
+.main-title {
+    font-size: 2rem; /* Сделал немного больше для улучшения восприятия */
+    margin-bottom: 20px;
+    color: #333;
+}
+
+/* Стиль формы загрузки файла */
+.upload-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Метка для выбора файла */
+.file-label {
+    font-size: 1.2rem; /* Увеличил немного размер */
+    margin-bottom: 10px;
+    color: #555;
+}
+
+/* Стили для инпута файла */
+.input-file {
+    margin-bottom: 20px;
+    padding: 12px; /* Сделал больше padding для лучшего кликабельного восприятия */
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    width: 100%;
+    max-width: 350px;
+    font-size: 1rem;
+}
+
+/* Кнопка отправки файла */
+.btn-submit {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 12px 25px; /* Сделал чуть больше padding */
+    font-size: 1.1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-submit:hover {
+    background-color: #0056b3;
+}
+
+/* Стиль для вывода сообщения об ошибке */
+.error-message {
+    color: red;
+    font-size: 0.9rem;
+    margin-top: 10px;
+}
+
+/* Опции выбора графиков и осей */
+.chart-options {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* Стиль для меток графиков */
+.chart-label {
+    font-size: 1.1rem;
+    margin-right: 10px;
+}
+
+/* Выпадающие списки для выбора типа графиков и осей */
+.select-chart {
+    padding: 10px;
+    font-size: 1rem;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    width: 220px; /* Сделал чуть больше ширину для удобства */
+    margin-bottom: 10px;
+}
+
+/* Кнопка для построения графика */
+.btn-chart {
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    padding: 10px 20px; /* Сделал чуть больше padding */
+    font-size: 1.1rem;
+    margin-left: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-chart:hover {
+    background-color: #218838;
+}
+
+/* Контейнер для графика */
+.chart-container {
+    width: 90%; /* Сделал шире графики */
+    max-width: 1200px; /* Увеличил максимальную ширину */
+    height: 600px; /* Увеличил высоту для графиков */
+    margin: 30px auto;
+    padding: 20px;
+    background-color: #fff;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Отключаем canvas */
+canvas {
+    display: block;
+    width: 100%;
+    height: 100%; /* График занимает всю высоту контейнера */
+}
+
+/* Стиль для адаптивности на маленьких экранах */
+@media (max-width: 768px) {
+    .container {
+        width: 95%;
+    }
+
+    .chart-container {
+        width: 95%;
+        height: 400px; /* Уменьшаем высоту для мобильных устройств */
+    }
+
+    .select-chart {
+        width: 100%; /* Расширение селекторов на всю ширину экрана на мобильных устройствах */
+    }
+
+    .btn-chart {
+        margin-top: 10px; /* Увеличил отступ для кнопки на мобильных устройствах */
+        width: 100%; /* Кнопка занимает всю ширину */
+    }
+}

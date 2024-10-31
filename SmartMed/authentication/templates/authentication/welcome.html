@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+{% load static %}
+{% csrf_token %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedSmart</title>
+    <link rel="icon" type="image/png" href="{% static 'img/logo.png' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+</head>
+<body class="animate__animated animate__fadeIn">
+
+    <header class="animate__animated animate__slideInDown">
+        <div class="logo">
+            <img src="{% static 'img/logo.png' %}" alt="Логотип MedSmart" class="logo-icon">
+            <h2>MedSmart</h2>
+        </div>
+        <div class="profile-menu">
+            <img src="{% static 'img/default-avatar.png' %}" alt="Аватар пользователя" id="profile-avatar" class="profile-avatar animate__animated animate__zoomIn">
+            <div class="dropdown-menu" id="dropdown-menu">
+                <div class="user-info">
+                    <img src="{% static 'img/default-avatar.png' %}" alt="Аватар пользователя" id="dropdown-avatar" class="dropdown-avatar">
+                    <h3 id="user-name">Гость</h3>
+                    <p id="user-email" style="display: none;">email@example.com</p>
+                </div>
+                <ul>
+                    <li><a href="#"><i class="fas fa-user"></i> Профиль</a></li>
+                    <li><a href="#" id="change-avatar-btn"><i class="fas fa-image"></i> Изменить аватар</a></li>
+                    <li><a href="/" id="logout-btn"><i class="fas fa-sign-out-alt"></i> Выйти</a></li>
+                </ul>
+                <input type="file" id="avatar-input" style="display: none;">
+            </div>
+        </div>
+    </header>
+
+    <main class="animate__animated animate__fadeInUp">
+        <section class="welcome-section">
+            <h1>Добро пожаловать, <span id="welcome-user-name">Гость</span>!</h1>
+            <p id="courses-message">Пожалуйста, <a href="log" class="highlight-link">войдите</a>, чтобы просмотреть ваши курсы.</p>
+            <div id="courses-container" class="buttons-container" style="display: none;">
+                <a href="my-courses.html" class="btn primary-btn" id="my-courses-btn">Мои Курсы</a>
+                <a href="explore-courses.html" class="btn secondary-btn" id="explore-courses-btn">Исследовать Курсы</a>
+                <button class="btn primary-btn" id="analyze-btn">Проанализировать</button>
+                <div id="file-upload-container" style="display: none;">
+                    <input type="file" id="file-input" accept=".xlsx" class="btn">
+                    <button id="upload-file-btn" class="btn"><i class="fas fa-upload"></i> Отправить файл</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="{% static 'welcome.js' %}"></script>
+</body>
+</html>

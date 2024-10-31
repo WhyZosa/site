@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход</title>
+    <!-- Подключаем Animate.analyze.css для анимаций -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <!-- Подключаем основной файл стилей -->
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+</head>
+<body class="login-page animate__animated animate__fadeIn">
+    <div class="login-container">
+        <h1 class="animate__animated animate__bounceIn">Вход</h1>
+        <form id="login-form" class="animate__animated animate__fadeInUp">
+            <label for="login-email">Электронная почта:</label>
+            <input type="email" id="login-email" name="email" class="input" required>
+
+            <label for="login-password">Пароль:</label>
+            <input type="password" id="login-password" name="password" class="input" required>
+
+            <button type="submit" class="btn animate__animated animate__pulse animate__infinite">Войти</button>
+        </form>
+        <p class="switch-link">Еще не зарегистрированы? <a href="reg">Зарегистрироваться</a></p>
+        <p id="login-error" class="error-message"></p>
+    </div>
+    <script src="{% static 'script.js' %}"></script>
+</body>
+</html>
