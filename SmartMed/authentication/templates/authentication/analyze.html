@@ -1,60 +1,81 @@
 <!DOCTYPE html>
-{% load static %}
 <html lang="ru">
 <head>
+    {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Загрузить файл для анализа</title>
+    <title>Анализ данных</title>
     <link rel="stylesheet" href="{% static 'analyze.css' %}">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-</head>
-<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-<body>
-
-    <div class="container">
-        <h1 class="main-title">Загрузить файл для анализа</h1>
-
-        <form id="file-upload-form" enctype="multipart/form-data" method="post" class="upload-form">
-            {% csrf_token %}
-            <label for="file-input" class="file-label">Выберите файл (XLS, XLSX, CSV):</label>
-            <input type="file" id="file-input" name="file" class="input-file" accept=".xls, .xlsx, .csv" required>
-            <button type="submit" class="btn-submit">Отправить файл</button>
-        </form>        
-        <p id="upload-error" class="error-message"></p>
-    </div>
-
-    <!-- Выбор графика и столбцов -->
-    <div class="chart-options">
-        <label for="chart-type" class="chart-label">Выберите тип графика</label>
-        <select id="chart-type" class="select-chart">
-            <option value="scatter_matrix">Scatter Matrix</option>
-            <option value="histogram">Histogram</option>
-            <option value="heatmap">Heatmap</option>
-            <option value="scatter_plot">Scatter Plot</option>
-            <option value="box_plot">Box Plot</option>
-            <option value="pie_chart">Pie Chart</option>
-            <option value="multiple_histograms">Multiple Histograms</option>
-            <option value="line_chart">Line Chart</option>
-            <option value="logarithmic_chart">Logarithmic Chart</option>
-        </select>
-
-        <!-- Выпадающие списки для выбора столбцов -->
-        <label for="x-axis" class="chart-label">Выберите X-ось</label>
-        <select id="x-axis" class="select-chart"></select>
-
-        <label for="y-axis" class="chart-label">Выберите Y-ось</label>
-        <select id="y-axis" class="select-chart"></select>
-
-        <button id="build-chart" class="btn-chart">Построить график</button>
-    </div>
-
-    <!-- Блок для графика -->
-    <div id="chart-container" class="chart-container">
-        <div id="chart"></div> <!-- Исправлено на <div> для Plotly -->
-    </div>
-
-    <!-- Подключение Plotly и собственного скрипта -->
+    <!-- Подключение Plotly -->
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div class="page-container">
+        <!-- Шапка страницы -->
+        <header class="header">
+            <div class="logo-container">
+                <img src="{% static 'img/logo.jpg' %}" alt="Логотип" class="logo">
+            </div>
+            <nav class="nav-bar">
+                <ul class="nav-list">
+                    <li><a href="{% url 'authentication:modules' %}" class="nav-button">Модули</a></li>
+                    <li><a href="{% url 'authentication:log' %}" class="nav-button">Выход</a></li>
+                </ul>
+            </nav>
+        </header>
+        <!-- Основное содержание -->
+        <main class="main-content">
+            <h1 class="title">Анализ данных</h1>
+            <!-- Форма загрузки файла -->
+            <form id="file-upload-form" enctype="multipart/form-data" method="post" class="upload-form">
+                {% csrf_token %}
+                <label for="file-input" class="file-label">Загрузите файл данных (XLSX, CSV):</label>
+                <input type="file" id="file-input" name="file" class="input-file" accept=".xls, .xlsx, .csv" required>
+                <button type="submit" class="btn-submit">Загрузить</button>
+            </form>
+            <!-- Контейнер для сообщений -->
+            <div id="message-container" class="message-container hidden"></div>
+            <!-- Прогресс-бар -->
+            <div id="progress-container" style="display: none; justify-content: center; align-items: center;">
+                <progress id="progress-bar" max="100" value="0"></progress>
+            </div>
+            <!-- Опции для построения графиков -->
+            <div id="chart-options" class="chart-options hidden">
+                <h2 class="subtitle">Выберите параметры для графика</h2>
+                <label for="chart-type" class="chart-label">Тип графика:</label>
+                <select id="chart-type" class="select-input">
+                    <option value="scatter_matrix">Матрица рассеяния</option>
+                    <option value="histogram">Гистограмма</option>
+                    <option value="heatmap">Тепловая карта</option>
+                    <option value="scatter_plot">Диаграмма рассеяния</option>
+                    <option value="box_plot">Ящиковая диаграмма</option>
+                    <option value="pie_chart">Круговая диаграмма</option>
+                    <option value="multiple_histograms">Множественные гистограммы</option>
+                    <option value="line_chart">Линейный график</option>
+                    <option value="logarithmic_chart">Логарифмический график</option>
+                </select>
+                <!-- Контейнер для выбора столбцов -->
+                <label for="columns-select" class="chart-label">Выберите столбцы:</label>
+                <div id="checkbox-container" class="checkbox-container"></div>
+                <button id="build-chart" class="btn-submit">Построить график</button>
+                <button id="clear-charts" class="btn-submit">Очистить графики</button>
+            </div>
+            <!-- Контейнер для графиков -->
+            <div id="chart-container" class="chart-container hidden">
+                <!-- Графики будут добавляться здесь -->
+            </div>
+        </main>
+        <!-- Футер страницы -->
+        <footer class="footer-container">
+            <p class="contact-info">Связаться с нами:</p>
+            <a href="https://t.me/smartmedtest_bot" target="_blank" class="telegram-link">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm4.65 8.46-2.212 10.65c-.165.731-.595.905-1.204.562l-3.33-2.46-1.608 1.546c-.17.17-.31.31-.636.31l.232-3.26 5.924-5.377c.257-.232-.057-.363-.399-.131l-7.31 4.596-3.146-1c-.684-.213-.699-.684.143-1.01l12.296-4.54c.567-.207 1.063.131.85.996z"/>
+                </svg>
+            </a>
+        </footer>
+    </div>
+    <!-- Подключение вашего JavaScript-файла -->
     <script src="{% static 'analyze.js' %}"></script>
 </body>
 </html>

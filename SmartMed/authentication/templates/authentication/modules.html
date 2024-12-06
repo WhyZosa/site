@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Выберите способ анализа</title>
+    <link rel="stylesheet" href="{% static 'modules.css' %}">
+</head>
+<body>
+    <div class="page-container">
+        <header class="header">
+            <div class="logo-container">
+                <img src="{% static 'img/logo.jpg' %}" alt="Логотип" class="logo">
+            </div>
+            <nav class="nav-bar">
+                <ul class="nav-list">
+                    <li><a href="{% url 'authentication:index' %}" class="nav-button">Главная</a></li>
+                    <li><a href="{% url 'authentication:log' %}" class="nav-button">Выход</a></li>
+                </ul>
+            </nav>
+        </header>
+        <main class="main-content">
+            <h1 class="title">Выберите способ анализа</h1>
+            <div class="modules-grid">
+                <div class="module-card">
+                    <h2 class="module-title">Описательный анализ</h2>
+                    <p class="module-description">Получение обобщенной информации о данных, визуальный анализ</p>
+                    <a href="{% url 'authentication:analyze' %}" class="module-button">Перейти</a>
+                </div>
+                <div class="module-card">
+                    <h2 class="module-title">Биоэквивалентность</h2>
+                    <p class="module-description">Исследование идентичности свойств биодоступности у исходного препарата и дженерика</p>
+                    <button class="module-button">Перейти</button>
+                </div>
+                <div class="module-card">
+                    <h2 class="module-title">Предсказательный анализ</h2>
+                    <p class="module-description">Построение статистических и предсказательных моделей, ROC-анализ</p>
+                    <a href="{% url 'authentication:predictive_analysis' %}" class="module-button">Перейти</a>
+                </div>                
+                <div class="module-card">
+                    <h2 class="module-title">Сравнительный анализ</h2>
+                    <p class="module-description">Получение результатов различных методов сравнения двух выборок или табличных данных</p>
+                    <a href="{% url 'authentication:comparatibe_analysis' %}" class="module-button">Перейти</a>
+                </div>
+                <div class="module-card">
+                    <h2 class="module-title">Кластерный анализ</h2>
+                    <p class="module-description">В процессе реализации</p>
+                    <button class="module-button">Перейти</button>
+                </div>
+                <div class="module-card">
+                    <h2 class="module-title">Анализ выживаемости</h2>
+                    <p class="module-description">В процессе реализации</p>
+                    <button class="module-button">Перейти</button>
+                </div>
+            </div>
+        </main>
+        <footer class="footer-container">
+            <p class="contact-info">Связаться с нами:</p>
+            <a href="https://t.me/smartmedtest_bot" target="_blank" class="telegram-link">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm4.65 8.46-2.212 10.65c-.165.731-.595.905-1.204.562l-3.33-2.46-1.608 1.546c-.17.17-.31.31-.636.31l.232-3.26 5.924-5.377c.257-.232-.057-.363-.399-.131l-7.31 4.596-3.146-1c-.684-.213-.699-.684.143-1.01l12.296-4.54c.567-.207 1.063.131.85.996z"/>
+                </svg>
+            </a>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,254 +1,48 @@
+"""
+Модуль для обработки представлений и API, включая регистрацию, вход и анализ данных.
+"""
+
 import json
-import base64
-import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
-from io import StringIO
-import numpy as np
-
-from django.http import JsonResponse
-from django.shortcuts import render
 import logging
+import pandas as pd
+import tempfile
+import os
 
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import render
+from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from tempfile import NamedTemporaryFile
 from .renderers import UserJSONRenderer
 from .serializers import LoginSerializer, RegistrationSerializer, UserSerializer
+from .descriptive import process_json_descriptive
+from .comparatibe import process_json_comparative
 
 # Настройка логирования для отладки
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-def process_missing_data(df, method):
-    if method == 'drop':
-        return df.dropna()
-    elif method == 'fill_mean':
-        return df.fillna(df.mean())
-    elif method == 'fill_median':
-        return df.fillna(df.median())
-    elif method == 'fill_mode':
-        return df.fillna(df.mode().iloc[0])
-    else:
-        return df
-
-def get_existing_columns(df, columns):
-    """Проверка существующих столбцов в DataFrame"""
-    return [col for col in columns if col in df.columns]
-
-def get_all_columns(df):
-    """Возвращает все столбцы из DataFrame"""
-    return df.columns.tolist()
-
-def generate_scatter_matrix(df, columns):
-    logger.debug(f"Генерация scatter matrix для столбцов: {columns}")
-    fig = px.scatter_matrix(df, dimensions=columns)
-    return fig
-
-def generate_histogram(df, columns):
-    logger.debug(f"Генерация гистограммы для столбцов: {columns}")
-    fig = px.histogram(df, x=columns)
-    return fig
-
-def generate_heatmap(df, columns):
-    logger.debug(f"Генерация тепловой карты для столбцов: {columns}")
-    corr_matrix = df[columns].corr()
-    fig = px.imshow(corr_matrix, text_auto=True, color_continuous_scale='RdBu_r')
-    return fig
-
-def generate_scatter_plot(df, x_column, y_column):
-    logger.debug(f"Генерация scatter plot для столбцов X: {x_column}, Y: {y_column}")
-    fig = px.scatter(df, x=x_column, y=y_column)
-    return fig
-
-def generate_box_plot(df, columns):
-    logger.debug(f"Генерация box plot для столбцов: {columns}")
-    fig = px.box(df, y=columns)
-    return fig
-
-def generate_pie_chart(df, column):
-    logger.debug(f"Генерация круговой диаграммы для столбца: {column}")
-    fig = px.pie(df, names=column)
-    return fig
-
-def generate_multiple_histograms(df, columns):
-    logger.debug(f"Генерация нескольких гистограмм для столбцов: {columns}")
-    fig = go.Figure()
-    for col in columns:
-        fig.add_trace(go.Histogram(x=df[col], name=col))
-    fig.update_layout(barmode='overlay')
-    fig.update_traces(opacity=0.75)
-    return fig
-
-def generate_line_chart(df, x_column, y_column):
-    logger.debug(f"Генерация линейного графика для столбцов X: {x_column}, Y: {y_column}")
-    fig = px.line(df, x=x_column, y=y_column)
-    return fig
-
-def generate_logarithmic_chart(df, x_column, y_column):
-    logger.debug(f"Генерация логарифмического графика для столбцов X: {x_column}, Y: {y_column}")
-    fig = px.line(df, x=x_column, y=y_column)
-    fig.update_layout(yaxis_type="log")
-    return fig
-
-def convert_ndarray_to_list(data):
-    """Рекурсивная функция для преобразования всех объектов ndarray в списки"""
-    if isinstance(data, np.ndarray):
-        return data.tolist()
-    elif isinstance(data, dict):
-        return {key: convert_ndarray_to_list(value) for key, value in data.items()}
-    elif isinstance(data, list):
-        return [convert_ndarray_to_list(item) for item in data]
-    else:
-        return data
-
-def get_alternative_columns(df, num_columns=2):
-    """Возвращает первые num_columns столбцов из DataFrame"""
-    available_columns = df.columns.tolist()
-    return available_columns[:num_columns]
-
-def process_json(input_json):
-    logger.debug(f"Обработка входного JSON: {input_json}")
-    user_input = json.loads(input_json)
-    df_json = user_input.get('data_path')
-    missing_data_method = user_input.get('missing_data_method', 'fill_mean')
-    graphs = user_input.get('graphs', [])
-
-    # Чтение данных из JSON в DataFrame
-    df = pd.read_json(StringIO(df_json))
-    df = process_missing_data(df, missing_data_method)
-
-    output = {}
-
-    columns = get_all_columns(df)  # Получаем все столбцы
-
-    for graph in graphs:
-        graph_type = graph.get('type')
-        fig = None
-
-        if graph_type == 'scatter_matrix':
-            fig = generate_scatter_matrix(df, columns)
-
-        elif graph_type == 'heatmap':
-            fig = generate_heatmap(df, columns)
-
-        elif graph_type == 'multiple_histograms':
-            fig = generate_multiple_histograms(df, columns)
-
-        elif graph_type == 'scatter_plot':
-            # Генерация scatter plot для каждой пары столбцов
-            for i, x_col in enumerate(columns):
-                for j, y_col in enumerate(columns):
-                    if i != j:
-                        fig = generate_scatter_plot(df, x_col, y_col)
-                        output[f"scatter_plot_{x_col}_vs_{y_col}"] = convert_ndarray_to_list(fig.to_dict())
-
-        elif graph_type == 'box_plot':
-            # Генерация box plot для каждого столбца
-            for col in columns:
-                fig = generate_box_plot(df, [col])
-                output[f"box_plot_{col}"] = convert_ndarray_to_list(fig.to_dict())
-
-        elif graph_type == 'line_chart':
-            # Генерация line chart для каждой пары столбцов
-            for i, x_col in enumerate(columns):
-                for j, y_col in enumerate(columns):
-                    if i != j:
-                        fig = generate_line_chart(df, x_col, y_col)
-                        output[f"line_chart_{x_col}_vs_{y_col}"] = convert_ndarray_to_list(fig.to_dict())
-
-        elif graph_type == 'logarithmic_chart':
-            # Генерация logarithmic chart для каждой пары столбцов
-            for i, x_col in enumerate(columns):
-                for j, y_col in enumerate(columns):
-                    if i != j:
-                        fig = generate_logarithmic_chart(df, x_col, y_col)
-                        output[f"logarithmic_chart_{x_col}_vs_{y_col}"] = convert_ndarray_to_list(fig.to_dict())
-
-        elif graph_type == 'histogram':
-            fig = generate_histogram(df, columns)
-
-        elif graph_type == 'pie_chart':
-            # Генерация pie chart для каждого столбца
-            for col in columns:
-                if df[col].nunique() <= 10:  # Ограничение для pie_chart
-                    fig = generate_pie_chart(df, col)
-                    output[f"pie_chart_{col}"] = convert_ndarray_to_list(fig.to_dict())
-
-        # Сохраняем графики
-        if fig and graph_type not in output:
-            output[graph_type] = convert_ndarray_to_list(fig.to_dict())
-
-    return output  # Возвращаем словарь
-
-class DashboardApi(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        logger.debug("Началась обработка загруженного файла")
-        file = request.FILES.get('file')
-
-        if not file:
-            logger.error("Файл не загружен")
-            return JsonResponse({'error': 'Файл не загружен'}, status=400)
-
-        try:
-            # Определяем тип файла (CSV или Excel)
-            if file.name.endswith('.csv'):
-                df = pd.read_csv(file)
-            elif file.name.endswith('.xls') or file.name.endswith('.xlsx'):
-                df = pd.read_excel(file)
-            else:
-                logger.error(f"Неподдерживаемый формат файла: {file.name}")
-                return JsonResponse({'error': 'Неподдерживаемый формат файла. Допустимы только .csv, .xls, .xlsx'}, status=400)
-
-            df_json = df.to_json()
-
-            input_json = {
-                "data_path": df_json,
-                "missing_data_method": "fill_mean",
-                "graphs": [
-                    {"type": "scatter_matrix"},
-                    {"type": "histogram"},
-                    {"type": "heatmap"},
-                    {"type": "scatter_plot"},
-                    {"type": "box_plot"},
-                    {"type": "pie_chart"},
-                    {"type": "multiple_histograms"},
-                    {"type": "line_chart"},
-                    {"type": "logarithmic_chart"}
-                ]
-            }
-
-            logger.debug("Начинается процесс обработки JSON")
-            result = process_json(json.dumps(input_json))
-
-            # Добавляем список столбцов в ответ
-            columns = df.columns.tolist()
-            result['columns'] = columns
-
-            logger.debug("Возвращаем результат в виде объекта JSON")
-            return JsonResponse(result, status=200)
-
-        except ValueError as e:
-            logger.error(f"Ошибка в данных: {str(e)}")
-            return JsonResponse({'error': 'Ошибка в данных'}, status=400)
-        except IOError as e:
-            logger.error(f"Ошибка ввода/вывода: {str(e)}")
-            return JsonResponse({'error': 'Ошибка ввода/вывода'}, status=500)
-        except Exception as e:
-            logger.error(f"Произошла непредвиденная ошибка: {str(e)}")
-            return JsonResponse({'error': f'Произошла непредвиденная ошибка: {str(e)}'}, status=500)
+# Глобальная переменная для хранения загруженного файла
+DATAFRAME_STORAGE = {}
 
 class RegistrationAPIView(APIView):
+    """
+    Эндпоинт для регистрации пользователей.
+    """
     permission_classes = (AllowAny,)
     serializer_class = RegistrationSerializer
     renderer_classes = (UserJSONRenderer,)
 
     def post(self, request):
+        """
+        Обрабатывает POST-запрос для регистрации нового пользователя.
+        """
         user = request.data.get('user', {})
         serializer = self.serializer_class(data=user)
         serializer.is_valid(raise_exception=True)
@@ -256,51 +50,253 @@ class RegistrationAPIView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class LoginAPIView(APIView):
+    """
+    Эндпоинт для входа пользователей.
+    """
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
     serializer_class = LoginSerializer
 
     def post(self, request):
-        logger.debug(f"Попытка входа: {request.data}")
+        """
+        Обрабатывает POST-запрос для аутентификации пользователя.
+        """
         user = request.data.get('user', {})
         serializer = self.serializer_class(data=user)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
+    """
+    Эндпоинт для получения и обновления данных профиля пользователя.
+    """
     permission_classes = (IsAuthenticated,)
     renderer_classes = (UserJSONRenderer,)
     serializer_class = UserSerializer
 
     def retrieve(self, request, *args, **kwargs):
+        """
+        Возвращает данные текущего аутентифицированного пользователя.
+        """
         serializer = self.serializer_class(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def update(self, request, *args, **kwargs):
+        """
+        Обновляет данные профиля текущего аутентифицированного пользователя.
+        """
         serializer_data = request.data.get('user', {})
         serializer = self.serializer_class(request.user, data=serializer_data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-# Представление для страницы регистрации
 def reg(request):
+    """
+    Представление для страницы регистрации.
+    """
     return render(request, "authentication/registration.html")
 
-# Представление для страницы логина
 def log(request):
+    """
+    Представление для страницы входа.
+    """
     return render(request, "authentication/login.html")
 
-# Представление для главной страницы
 def index(request):
+    """
+    Представление для главной страницы.
+    """
     return render(request, "authentication/welcome.html")
 
-# Представление для профиля пользователя
 def profile(request):
+    """
+    Представление для страницы профиля пользователя.
+    """
     return render(request, "authentication/profile.html")
 
-# Представление для страницы анализа данных
 def analyze(request):
-    logger.debug("Отображение страницы анализа данных")
+    """
+    Представление для страницы анализа данных.
+    """
     return render(request, "authentication/analyze.html")
+
+def modules(request):
+    return render(request, 'authentication/modules.html')
+
+def comparatibe_analysis_view(request):
+    return render(request, 'authentication/comparatibe_analysis.html')
+
+def predictive_analysis_view(request):
+    """
+    Представление для страницы предсказательного анализа.
+    """
+    return render(request, 'authentication/predictive.html')
+
+@method_decorator(csrf_exempt, name='dispatch')
+class FileUploadApi(APIView):
+    """
+    API для загрузки файла
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user_id = request.user.id
+        file = request.FILES.get('file')
+
+        if not file:
+            return JsonResponse({'error': 'Файл не найден'}, status=400)
+
+        try:
+            # Проверка типа файла
+            if not file.name.endswith(('.xls', '.xlsx', '.csv')):
+                return JsonResponse({'error': 'Неверный тип файла'}, status=400)
+
+            df = pd.read_excel(file) if file.name.endswith(('.xls', '.xlsx')) else pd.read_csv(file)
+            DATAFRAME_STORAGE[user_id] = df
+            columns = df.columns.tolist()
+            logger.debug("Загруженные колонки: %s", columns)
+            return JsonResponse({'message': 'Файл успешно загружен', 'columns': columns}, status=200)
+        except Exception as e:
+            logger.error("Ошибка при обработке загруженного файла: %s", str(e))
+            return JsonResponse({'error': f'Ошибка при обработке файла'}, status=500)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class GenerateChartApi(APIView):
+    """
+    API для генерации графика на основе выбранных параметров.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        """
+        Обрабатывает POST-запрос для генерации графика.
+        """
+        user_id = request.user.id
+        df = DATAFRAME_STORAGE.get(user_id)
+
+        if df is None:
+            return JsonResponse({'error': 'Данные не найдены. Пожалуйста, загрузите файл сначала.'}, status=400)
+
+        chart_type = request.data.get('chart_type')
+        x_axis = request.data.get('x_axis')
+        y_axis = request.data.get('y_axis')
+        selected_columns = request.data.get('selected_columns', df.columns.tolist())
+        column = request.data.get('column', '')
+
+        # Отладочные сообщения
+        logger.debug("Полученные данные от клиента:")
+        logger.debug(f"chart_type: {chart_type}")
+        logger.debug(f"x_axis: {x_axis}")
+        logger.debug(f"y_axis: {y_axis}")
+        logger.debug(f"selected_columns: {selected_columns}")
+        logger.debug(f"column: {column}")
+
+        # Проверка на наличие осей для scatter_plot и line_chart
+        if chart_type in ['scatter_plot', 'line_chart'] and (not x_axis or not y_axis):
+            return JsonResponse({'error': 'Для scatter_plot и line_chart необходимо указать оси X и Y.'}, status=400)
+        if chart_type == 'pie_chart' and not column:
+            return JsonResponse({'error': 'Для круговой диаграммы необходимо выбрать столбец.'}, status=400)
+
+        # Создаем временный файл с данными
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.xlsx') as temp_file:
+            df.to_excel(temp_file.name, index=False)
+            temp_file_path = temp_file.name
+
+        # Формируем входные данные для process_json
+        input_json = {
+            "data_path": temp_file_path,
+            "missing_data_method": "fill_mean",
+            "graphs": [
+                {
+                    "type": chart_type,
+                    "columns": selected_columns,
+                    "x": x_axis,
+                    "y": y_axis,
+                    "column": column
+                }
+            ]
+        }
+
+        try:
+            # Обрабатываем JSON-данные с помощью функции process_json
+            result = process_json_descriptive(json.dumps(input_json))
+            logger.debug("Результат process_json: %s", result)
+
+            # Удаляем временный файл
+            os.remove(temp_file_path)
+
+            if isinstance(result, str):
+                result = json.loads(result)
+
+            # Получаем данные графика
+            graph_data = result.get(chart_type)
+            if graph_data and 'figure' in graph_data:
+                # Возвращаем данные графика в формате JSON
+                return JsonResponse(graph_data, status=200)
+            else:
+                error_message = graph_data.get('error', 'Неизвестная ошибка при генерации графика.')
+                return JsonResponse({'error': error_message}, status=400)
+
+        except Exception as e:
+            logger.error("Ошибка при генерации графика: %s", str(e))
+            return JsonResponse({'error': f'Ошибка при генерации графика: {str(e)}'}, status=500)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class CustomAnalysisApi(APIView):
+    """
+    API для обработки пользовательского анализа.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user_id = request.user.id
+        logger.debug("Получен запрос на анализ от пользователя ID: %s", user_id)
+
+        df = DATAFRAME_STORAGE.get(user_id)
+        if df is None:
+            logger.error("Данные не найдены для пользователя ID: %s", user_id)
+            return JsonResponse({'error': 'Данные не найдены. Пожалуйста, загрузите файл сначала.'}, status=400)
+
+        analysis_type = request.data.get('tests', [])
+        if not analysis_type:
+            logger.error("Не указаны тесты в запросе.")
+            return JsonResponse({'error': 'Не указаны тесты для анализа.'}, status=400)
+
+        try:
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.csv') as temp_file:
+                df.to_csv(temp_file.name, index=False)
+                temp_file_path = temp_file.name
+
+            input_json = {
+                "data_path": temp_file_path,
+                "tests": analysis_type,
+                "missing_data_method": "fill_mean"
+            }
+
+            result = process_json_comparative(json.dumps(input_json))
+            logger.debug("Результат анализа: %s", result)
+
+            os.remove(temp_file_path)
+
+            if isinstance(result, str):
+                result = json.loads(result)
+
+            if not result or (isinstance(result, dict) and not any(result.values())):
+                logger.warning("Анализ завершился без результатов. Проверьте данные.")
+                return JsonResponse({'error': 'Анализ завершился без результатов. Проверьте данные.'}, status=200)
+
+            formatted_result = {
+                "Анализ": analysis_type[0]['type'],
+                "Колонка 1": analysis_type[0].get('column1'),
+                "Колонка 2": analysis_type[0].get('column2'),
+                "Результаты": result
+            }
+
+            logger.debug("Форматированный результат: %s", formatted_result)
+            return JsonResponse(formatted_result, json_dumps_params={'ensure_ascii': False, 'indent': 2}, status=200)
+
+        except Exception as e:
+            logger.error("Ошибка выполнения анализа: %s", str(e))
+            return JsonResponse({'error': f'Ошибка выполнения анализа: {str(e)}'}, status=500)
 

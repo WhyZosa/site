@@ -1,126 +1,301 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('file-upload-form');
+    const uploadForm = document.getElementById('file-upload-form');
     const fileInput = document.getElementById('file-input');
-    const errorMessage = document.getElementById('upload-error');
+    const messageContainer = document.getElementById('message-container');
+    const progressContainer = document.getElementById('progress-container');
+    const progressBar = document.getElementById('progress-bar');
+    const chartOptions = document.getElementById('chart-options');
     const chartTypeSelect = document.getElementById('chart-type');
-    const xAxisSelect = document.getElementById('x-axis');
-    const yAxisSelect = document.getElementById('y-axis');
     const buildChartButton = document.getElementById('build-chart');
+    const clearChartsButton = document.getElementById('clear-charts');
     const chartContainer = document.getElementById('chart-container');
-    let chartData = null; // Переменная для хранения данных с сервера
+    const checkboxContainer = document.getElementById('checkbox-container');
+    let columns = [];
+    let uploadedFilePath = '';
 
-    // Отправка формы и загрузка файла на сервер
-    form.addEventListener('submit', function (event) {
+    uploadForm.addEventListener('submit', async (event) => {
         event.preventDefault();
-        errorMessage.textContent = '';
 
-        if (!fileInput.files.length) {
-            errorMessage.textContent = 'Пожалуйста, выберите файл.';
+        // Hide elements and clear chart container
+        hideElements(['messageContainer', 'chartOptions', 'chartContainer']);
+        chartContainer.innerHTML = '';
+
+        const file = fileInput.files[0];
+        if (!file) {
+            showMessage('Ошибка: Выберите файл для загрузки.', 'error');
             return;
         }
 
         const formData = new FormData();
-        formData.append('file', fileInput.files[0]);
+        formData.append('file', file);
 
-        const token = localStorage.getItem('token');  // Получаем токен (если он нужен)
+        const token = localStorage.getItem('token');
         if (!token) {
-            errorMessage.textContent = 'Токен не найден. Пожалуйста, авторизуйтесь.';
+            showMessage('Ошибка: Токен не найден. Пожалуйста, авторизуйтесь.', 'error');
             return;
         }
 
-        // Отправка файла на сервер и получение данных для графиков
-        fetch('/upload/', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-                'Authorization': `Token ${token}`  // Добавляем токен авторизации
+        progressContainer.style.display = 'flex';
+        progressBar.value = 0;
+
+        try {
+            const response = await fetch('/upload/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Authorization': `Token ${token}`
+                }
+            });
+
+            progressBar.value = 50;
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(`Ошибка загрузки файла: ${errorData.error || 'Неизвестная ошибка'}`);
             }
+
+            const data = await response.json();
+            progressBar.value = 100;
+            setTimeout(() => progressContainer.style.display = 'none', 500);
+
+            if (data.error) {
+                showMessage(data.error, 'error');
+            } else {
+                showMessage('Файл успешно загружен.', 'success');
+                columns = data.columns;
+                uploadedFilePath = data.file_path; // Get the file path
+                createCheckboxes(columns);
+                chartOptions.classList.remove('hidden');
+            }
+        } catch (error) {
+            progressContainer.style.display = 'none';
+            showMessage(`Ошибка при загрузке файла: ${error.message}`, 'error');
+            console.error('Ошибка при загрузке файла:', error);
+        }
+    });
+
+    function showMessage(message, type) {
+        messageContainer.classList.remove('hidden');
+        messageContainer.textContent = message;
+        messageContainer.className = `message-container ${type}`;
+    }
+
+    function hideElements(elements) {
+        elements.forEach(elementId => {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.classList.add('hidden');
+            }
+        });
+    }
+
+    function createCheckboxes(columns) {
+        checkboxContainer.innerHTML = ''; // Clear the container
+
+        columns.forEach(column => {
+            const label = document.createElement('label');
+            label.textContent = column;
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.name = 'columns';
+            checkbox.value = column;
+
+            label.prepend(checkbox);
+            label.className = 'checkbox-label'; // Add class for styling
+            checkboxContainer.appendChild(label);
+        });
+    }
+
+    buildChartButton.addEventListener('click', () => {
+        const selectedGraph = chartTypeSelect.value;
+        const selectedColumns = Array.from(checkboxContainer.querySelectorAll('input[name="columns"]:checked')).map(cb => cb.value);
+
+        // Validate that at least one column is selected
+        if (selectedColumns.length === 0) {
+            showMessage('Ошибка: Выберите хотя бы один столбец.', 'error');
+            return;
+        }
+
+        let x_axis = null;
+        let y_axis = null;
+        let column = null; // For pie_chart
+
+        // Logic for charts requiring a specific number of columns
+        if (selectedGraph === 'scatter_plot' || selectedGraph === 'line_chart' || selectedGraph === 'logarithmic_chart') {
+            if (selectedColumns.length !== 2) {
+                showMessage('Ошибка: Для этого графика необходимо выбрать ровно два столбца.', 'error');
+                return;
+            }
+            // Assign first column as x_axis, second as y_axis
+            x_axis = selectedColumns[0];
+            y_axis = selectedColumns[1];
+        }
+
+        // Validation for scatter_matrix
+        if (selectedGraph === 'scatter_matrix') {
+            if (selectedColumns.length < 3) {
+                showMessage('Ошибка: Выберите минимум 3 столбца либо постройте график через Диаграмма Рассеяния.', 'error');
+                return;
+            }
+        }
+
+        // Validation for pie_chart
+        if (selectedGraph === 'pie_chart') {
+            if (selectedColumns.length !== 1) {
+                showMessage('Ошибка: Для круговой диаграммы необходимо выбрать ровно один столбец.', 'error');
+                return;
+            }
+            // Assign the selected column as column
+            column = selectedColumns[0];
+        }
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            showMessage('Ошибка: Токен не найден. Пожалуйста, авторизуйтесь.', 'error');
+            return;
+        }
+
+        const requestData = {
+            chart_type: selectedGraph,
+            selected_columns: selectedColumns,
+            data_path: uploadedFilePath // Pass the file path
+        };
+
+        // Add x_axis and y_axis if necessary
+        if (x_axis && y_axis) {
+            requestData.x_axis = x_axis;
+            requestData.y_axis = y_axis;
+        }
+
+        // Add column if necessary
+        if (column) {
+            requestData.column = column;
+        }
+
+        fetch('/generate-chart/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Token ${token}`
+            },
+            body: JSON.stringify(requestData)
         })
         .then(response => {
+            if (!response.ok) {
+                return response.json().then(errorData => {
+                    throw new Error(errorData.error || 'Неизвестная ошибка');
+                });
+            }
             return response.json();
         })
         .then(data => {
+            console.log('Полученные данные от сервера:', data); // Logging
             if (data.error) {
-                errorMessage.textContent = data.error;
+                showMessage(data.error, 'error');
+            } else if (data.figure) {
+                displayPlotlyChart(data.figure);
             } else {
-                // Сохраняем данные с сервера для дальнейшего использования
-                chartData = data;  
-                errorMessage.textContent = 'Файл успешно загружен. Теперь выберите тип графика и постройте его.';
-                
-                // Заполняем селекторы для осей X и Y
-                populateAxisSelectors(data.columns);
+                showMessage('Ошибка: данные для графика отсутствуют.', 'error');
             }
         })
         .catch(error => {
-            errorMessage.textContent = 'Ошибка при загрузке файла. Попробуйте снова.';
-            console.error('Ошибка при загрузке файла:', error);
+            console.error('Ошибка при запросе:', error); // Logging
+            showMessage(`Ошибка при запросе на сервер: ${error.message}`, 'error');
         });
     });
 
-    // Заполнение селекторов осей X и Y
-    function populateAxisSelectors(columns) {
-        if (!columns || !Array.isArray(columns)) {
-            console.error('Ошибка: колонки не были получены');
+    function displayPlotlyChart(figure) {
+        // Check for data and its correctness
+        if (!figure || !figure.data || !Array.isArray(figure.data) || figure.data.length === 0) {
+            console.error('Ошибка: Данные для графика отсутствуют или некорректны.', figure);
+            showMessage('Ошибка: Данные для графика отсутствуют или некорректны.', 'error');
             return;
         }
 
-        xAxisSelect.innerHTML = '';  
-        yAxisSelect.innerHTML = '';  
-        
-        columns.forEach(column => {
-            const optionX = document.createElement('option');
-            const optionY = document.createElement('option');
-            optionX.value = column;
-            optionX.textContent = column;
-            optionY.value = column;
-            optionY.textContent = column;
+        // Create a chart card
+        const chartCard = document.createElement('div');
+        chartCard.className = 'chart-card';
 
-            xAxisSelect.appendChild(optionX);
-            yAxisSelect.appendChild(optionY);
-        });
+        // Create a container for the chart
+        const graphDiv = document.createElement('div');
+        chartCard.appendChild(graphDiv);
+
+        // Add the card to the chart container
+        chartContainer.appendChild(chartCard);
+        chartContainer.classList.remove('hidden');
+        messageContainer.classList.add('hidden');
+
+        // Ensure layout is defined
+        figure.layout = figure.layout || {};
+
+        // Update layout for responsiveness
+        figure.layout = {
+            ...figure.layout,
+            autosize: true,
+            margin: {
+                l: 50, r: 50, t: 50, b: 50
+            },
+            font: {
+                family: 'Montserrat, sans-serif',
+                size: 12,
+                color: '#333'
+            },
+            title: {
+                text: figure.layout.title?.text || 'График',
+                font: {
+                    size: 16
+                }
+            },
+            plot_bgcolor: '#ffffff',
+            paper_bgcolor: '#ffffff',
+            xaxis: {
+                title: {
+                    text: figure.layout.xaxis?.title?.text || 'Ось X',
+                    font: {
+                        size: 14
+                    }
+                },
+                tickfont: {
+                    size: 12
+                }
+            },
+            yaxis: {
+                title: {
+                    text: figure.layout.yaxis?.title?.text || 'Ось Y',
+                    font: {
+                        size: 14
+                    }
+                },
+                tickfont: {
+                    size: 12
+                }
+            },
+            legend: {
+                font: {
+                    size: 12
+                }
+            }
+        };
+
+        // Plotly configuration
+        const config = {
+            responsive: true,
+            displayModeBar: false // Disable the toolbar
+        };
+
+        try {
+            // Display the chart
+            Plotly.newPlot(graphDiv, figure.data, figure.layout, config);
+        } catch (error) {
+            console.error('Ошибка при отрисовке графика:', error);
+            showMessage('Ошибка при отрисовке графика. Проверьте данные.', 'error');
+        }
     }
 
-    // Построение графика при нажатии на кнопку
-    buildChartButton.addEventListener('click', () => {
-        const selectedGraph = chartTypeSelect.value;
-        const xAxis = xAxisSelect.value;
-        const yAxis = yAxisSelect.value;
-
-        // Очищаем предыдущую ошибку перед новым построением графика
-        errorMessage.textContent = '';
-
-        if (!chartData || !chartData[selectedGraph]) {
-            errorMessage.textContent = 'График не найден или данные для графика отсутствуют.';
-            return;
-        }
-
-        const key = generateGraphKey(selectedGraph, xAxis, yAxis);
-
-        if (chartData[key] && chartData[key].data && chartData[key].layout) {
-            displayPlotlyChart(chartData[key], selectedGraph);
-        } else {
-            errorMessage.textContent = 'График не найден или данные для графика отсутствуют.';
-        }
+    // Button to clear charts
+    clearChartsButton.addEventListener('click', () => {
+        chartContainer.innerHTML = '';
+        chartContainer.classList.add('hidden');
     });
-
-    // Генерация ключа для получения нужных данных из chartData
-    function generateGraphKey(graphType, xAxis, yAxis) {
-        if (graphType === 'scatter_plot' || graphType === 'line_chart' || graphType === 'logarithmic_chart') {
-            return `${graphType}_${xAxis}_vs_${yAxis}`;
-        }
-        return graphType;  // Для других графиков  возвращаем просто тип
-    }
-
-    // Функция для отображения графика с использованием Plotly
-    function displayPlotlyChart(graphData, graphType) {
-        const plotlyData = graphData.data;
-        const plotlyLayout = graphData.layout;
-
-        // Отображаем график с Plotly
-        Plotly.newPlot('chart', plotlyData, plotlyLayout);
-
-        // Очищаем сообщение об ошибке, если график успешно построен
-        errorMessage.textContent = '';
-    }
 });

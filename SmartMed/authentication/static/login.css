@@ -1,0 +1,133 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Montserrat", sans-serif;
+}
+
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 20px;
+    background: #f7f7f7;
+}
+
+.form-container {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+}
+
+.hidden {
+    display: none;
+}
+
+.login-title {
+    font-size: 24px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+.password-strength,
+.password-match {
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.password-strength {
+    color: #e20001;
+}
+
+.password-match {
+    color: #e20001;
+}
+
+.login-button,
+.register-button {
+    width: 100%;
+    padding: 10px;
+    border: 0;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #e20001, #ff3b30);
+    color: #ffffff;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 15px;
+}
+
+.login-button:hover,
+.register-button:hover {
+    background: linear-gradient(90deg, #ff3b30, #e20001);
+}
+
+.register-link,
+.login-link {
+    margin-top: 15px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.register-link a,
+.login-link a {
+    color: #e20001;
+    text-decoration: none;
+}
+
+.register-link a:hover,
+.login-link a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .form-container {
+        padding: 20px;
+    }
+
+    .login-title {
+        font-size: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 10px;
+    }
+
+    .login-button,
+    .register-button {
+        font-size: 14px;
+        padding: 8px;
+    }
+
+    .register-link,
+    .login-link {
+        font-size: 12px;
+    }
+}

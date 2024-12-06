@@ -1,0 +1,212 @@
+.screen {
+    background-color: #f7f7f7;
+    padding: 20px;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+.header {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    background-color: #ffffff;
+    box-shadow: 2px -2px 15px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 10px 0;
+    margin: 0;
+    border-radius: 24px;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    width: 100%;
+    margin: 0;
+}
+
+.button {
+    cursor: pointer;
+    padding: 8px 16px;
+    border: 0;
+    border-radius: 24px;
+    background: linear-gradient(90deg, #e20001, #ff3b30);
+    color: #ffffff;
+    font-size: 16px;
+    font-family: "Montserrat", sans-serif;
+    font-weight: 700;
+    margin: 5px;
+    transition: background 0.3s ease-in-out;
+    width: auto;
+}
+
+.button:hover {
+    background: linear-gradient(90deg, #ff3b30, #e20001);
+}
+
+.image {
+    width: 100%;
+    height: auto;
+    max-height: 700px;
+    border-radius: 24px;
+    background-position: center;
+    background-size: cover;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 150px;
+    margin-top: 70px; /* Добавьте отступ сверху */
+    box-sizing: border-box;
+    position: relative;
+    background-color: rgba(80, 67, 67, 0.8); /* Цвет наложения */
+    background-blend-mode: multiply; /* Можно использовать другие режимы: screen, overlay и т.д. */
+}
+
+.text {
+    color: #ffffff;
+    font-size: 2.5vw;
+    font-family: "Montserrat", sans-serif;
+    font-weight: 700;
+    max-width: 40%;
+    line-height: 1.2;
+    padding: 10px 15px;
+    border-radius: 12px;
+}
+
+.logo {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    background-color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+}
+
+.logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    position: fixed;
+    bottom: 10px;
+    left: 0;
+    right: 0;
+    font-family: "Montserrat", sans-serif;
+    font-size: 14px;
+    color: #333;
+}
+
+.login-prompt {
+    font-family: "Montserrat", sans-serif;
+    font-size: 16px;
+    color: #444;
+    text-align: center;
+    margin-top: 10px;
+    animation: blink 1.5s infinite;
+}
+
+.nav a {
+    text-decoration: none; /* Убирает подчеркивание */
+    cursor: pointer;
+    padding: 8px 16px;
+    border: 0;
+    border-radius: 24px;
+    background: linear-gradient(90deg, #e20001, #ff3b30);
+    color: #ffffff;
+    font-size: 16px;
+    font-family: "Montserrat", sans-serif;
+    font-weight: 700;
+    margin: 5px;
+    transition: background 0.3s ease-in-out;
+    width: auto;
+    display: inline-block; /* Убедитесь, что работает с padding */
+}
+
+.nav a:hover {
+    background: linear-gradient(90deg, #ff3b30, #e20001);
+}
+
+@keyframes blink {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0;
+    }
+}
+
+/* Media queries for responsiveness */
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        align-items: center;
+        padding: 10px;
+    }
+
+    .nav {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .button {
+        width: 90%;
+        max-width: none;
+        margin: 8px 0;
+    }
+
+    .image {
+        height: auto;
+        max-height: 500px;
+        justify-content: center;
+        align-items: center;
+        padding: 50px;
+    }
+
+    .text {
+        font-size: 4vw;
+        max-width: 100%;
+    }
+
+    .footer {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .text {
+        font-size: 5vw;
+    }
+
+    .button {
+        font-size: 14px;
+        padding: 8px 16px;
+    }
+
+    .image {
+        max-height: 300px;
+        padding: 20px;
+    }
+
+    .logo {
+        width: 50px;
+        height: 50px;
+    }
+}
