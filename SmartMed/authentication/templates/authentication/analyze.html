@@ -42,7 +42,13 @@
             <!-- Опции для построения графиков -->
             <div id="chart-options" class="chart-options hidden">
                 <h2 class="subtitle">Выберите параметры для графика</h2>
-                <label for="chart-type" class="chart-label">Тип графика:</label>
+                <label for="chart-type" class="chart-label">
+                    Тип графика:
+                    <div class="tooltip" tabindex="0">
+                        ❓
+                        <span class="tooltip-text" id="chart-tooltip">Выберите тип графика для анализа данных.</span>
+                    </div>
+                </label>
                 <select id="chart-type" class="select-input">
                     <option value="scatter_matrix">Матрица рассеяния</option>
                     <option value="histogram">Гистограмма</option>
@@ -61,9 +67,7 @@
                 <button id="clear-charts" class="btn-submit">Очистить графики</button>
             </div>
             <!-- Контейнер для графиков -->
-            <div id="chart-container" class="chart-container hidden">
-                <!-- Графики будут добавляться здесь -->
-            </div>
+            <div id="chart-container" class="chart-container hidden"></div>
         </main>
         <!-- Футер страницы -->
         <footer class="footer-container">
@@ -75,7 +79,7 @@
             </a>
         </footer>
     </div>
-    <!-- Подключение вашего JavaScript-файла -->
+    <!-- Подключение JavaScript -->
     <script src="{% static 'analyze.js' %}"></script>
 </body>
 </html>

@@ -1,5 +1,46 @@
 /* analyze.css */
 
+.tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.tooltip .tooltip-text {
+    visibility: hidden;
+    width: 200px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 5px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.tooltip:hover .tooltip-text,
+.tooltip:focus-within .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+.tooltip .tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #555 transparent transparent transparent;
+}
+
+
 /* Общие стили для страницы */
 body {
     margin: 0;
@@ -16,35 +57,50 @@ body {
 
 /* Шапка */
 .header {
-    background-color: #ffffff;
-    padding: 10px 20px;
+    position: relative; /* Устанавливаем относительное позиционирование для контейнера */
     display: flex;
-    justify-content: space-between;
+    justify-content: center; /* Центрируем содержимое по горизонтали */
     align-items: center;
-    border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+    height: 100px; /* Фиксируем высоту верхней части */
+    background-color: #ffffff; /* Добавляем фон для верхней части */
+    border-bottom: 2px solid rgba(0, 0, 0, 0.1); /* Нижняя граница */
 }
 
 .logo {
-    width: 60px;
+    width: 60px; /* Размер логотипа */
     height: auto;
     border-radius: 50%;
 }
 
+.logo-container {
+    display: flex;
+    align-items: center; /* Центрируем логотип по вертикали */
+    margin-right: auto; /* Удерживаем логотип слева */
+    padding-left: 20px; /* Сдвигаем логотип правее */
+}
+
 .nav-bar {
-    flex-grow: 1;
+    position: absolute; /* Абсолютное позиционирование внутри `.header` */
+    top: 50%; /* Относительно контейнера `.header` */
+    left: 50%; /* Центрируем по горизонтали */
+    transform: translate(-50%, -50%); /* Точное центрирование */
     display: flex;
     justify-content: center;
+    align-items: center;
+    padding: 10px 20px; /* Отступы */
+    border-radius: 8px; /* Закруглённые углы */
 }
 
 .nav-list {
-    list-style-type: none;
-    display: flex;
-    margin: 0;
-    padding: 0;
+    list-style-type: none; /* Убираем стандартные маркеры списка */
+    display: flex; /* Flexbox для выравнивания пунктов в строку */
+    gap: 20px; /* Промежутки между элементами */
+    margin: 0; /* Убираем внешние отступы */
+    padding: 0; /* Убираем внутренние отступы */
 }
 
 .nav-list li {
-    margin: 0 10px;
+    margin: 0; /* Убираем лишние отступы */
 }
 
 .nav-button {
@@ -129,6 +185,13 @@ body {
 .message-container.success {
     background-color: #d4edda;
     color: #155724;
+    max-width: 500px; /* Максимальная ширина */
+    max-height: 100px; /* Максимальная высота */
+    overflow: auto; /* Скроллинг, если текст превышает высоту */
+    word-wrap: break-word; /* Перенос длинных слов */
+    padding: 10px; /* Внутренние отступы */
+    margin: 10px auto; /* Центрирование снаружи */
+    border-radius: 5px; /* Закругленные углы */
 }
 
 .message-container.error {

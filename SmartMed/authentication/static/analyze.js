@@ -6,12 +6,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const progressBar = document.getElementById('progress-bar');
     const chartOptions = document.getElementById('chart-options');
     const chartTypeSelect = document.getElementById('chart-type');
+    const chartTooltip = document.getElementById('chart-tooltip'); // Исправление: объявлена переменная
     const buildChartButton = document.getElementById('build-chart');
     const clearChartsButton = document.getElementById('clear-charts');
     const chartContainer = document.getElementById('chart-container');
     const checkboxContainer = document.getElementById('checkbox-container');
     let columns = [];
     let uploadedFilePath = '';
+
+    const chartDescriptions = {
+        scatter_matrix: "Матрица рассеяния: это диаграмма, где данные представлены точками на плоскости. Используется для визуального анализа взаимосвязей между двумя переменными. Сила корреляции определяется близостью точек на графике.",
+        histogram: "Гистограмма: это графическое представление распределения данных по интервалам. Помогает визуально оценить форму распределения данных и выявить его особенности, такие как мода, средние значения и разброс.",
+        heatmap: "Тепловая карта (хитмап): это визуальный инструмент для отображения плотности распределения значений данных и выявления их корреляций с помощью цветовой палитры.",
+        scatter_plot: "Диаграмма рассеяния: показывает связь между двумя переменными. Используется для анализа корреляций и выявления аномалий.",
+        box_plot: "Ящиковая диаграмма: визуализирует медиану, квартили, разброс данных и выбросы. Позволяет оценить диапазон и распределение значений в выборке.",
+        pie_chart: "Круговая диаграмма: отображает доли или процентное соотношение группы данных относительно всей совокупности.",
+        multiple_histograms: "Множественная гистограмма: включает несколько гистограмм для сравнения форм и плотности распределений между разными группами.",
+        line_chart: "Линейный график: используется для отображения изменения значений одной или нескольких переменных во времени или другой зависимости.",
+        logarithmic_chart: "Логарифмический график: это график, где одна или обе оси используют логарифмическую шкалу. Применяется для анализа данных с широким диапазоном значений."
+    };    
+
+    chartTypeSelect.addEventListener('change', () => {
+        const selectedType = chartTypeSelect.value;
+        chartTooltip.textContent = chartDescriptions[selectedType] || "Выберите тип графика для анализа данных.";
+    });
+
+    const initialType = chartTypeSelect.value;
+    chartTooltip.textContent = chartDescriptions[initialType] || "Выберите тип графика для анализа данных.";
 
     uploadForm.addEventListener('submit', async (event) => {
         event.preventDefault();
