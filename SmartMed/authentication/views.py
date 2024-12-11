@@ -177,7 +177,7 @@ class DescriptiveStatsApi(APIView):
 
         try:
             # Получаем описательную статистику
-            desc = df.describe(include='all').T.fillna('')
+            desc = df.describe(include='all').T.fillna('-')
             stats_dict = desc.to_dict()
 
             # Инициализация метрик для геометрического среднего и вариации
@@ -196,10 +196,10 @@ class DescriptiveStatsApi(APIView):
                     if positive_values.mean() != 0:
                         variation[col] = positive_values.std() / positive_values.mean()
                     else:
-                        variation[col] = ''
+                        variation[col] = '-'
                 else:
-                    geom_mean[col] = ''
-                    variation[col] = ''
+                    geom_mean[col] = '-'
+                    variation[col] = '-'
 
             # Перестраиваем stats_dict для соответствия по колонкам
             per_column_stats = {}
