@@ -223,17 +223,59 @@ document.addEventListener('DOMContentLoaded', () => {
             showMessage('Ошибка: Данные для графика отсутствуют или некорректны.', 'error');
             return;
         }
-
+    
         const chartCard = document.createElement('div');
         chartCard.className = 'chart-card';
-
+        chartCard.style.position = 'relative'; // Для абсолютного позиционирования кнопок
+    
         const graphDiv = document.createElement('div');
         chartCard.appendChild(graphDiv);
-
+    
+        // Создание контейнера для кнопок
+        const buttonsContainer = document.createElement('div');
+        buttonsContainer.style.position = 'absolute';
+        buttonsContainer.style.top = '10px';
+        buttonsContainer.style.right = '10px';
+        buttonsContainer.style.display = 'flex';
+        buttonsContainer.style.flexDirection = 'column';
+        buttonsContainer.style.zIndex = '1000'; // Поверх графика
+    
+        // Создание кнопки Zoom In
+        const zoomInButton = document.createElement('button');
+        zoomInButton.textContent = '+';
+        zoomInButton.style.margin = '2px';
+        zoomInButton.style.padding = '5px';
+        zoomInButton.style.fontSize = '16px';
+        zoomInButton.style.cursor = 'pointer';
+        zoomInButton.title = 'Zoom In';
+        buttonsContainer.appendChild(zoomInButton);
+    
+        // Создание кнопки Zoom Out
+        const zoomOutButton = document.createElement('button');
+        zoomOutButton.textContent = '-';
+        zoomOutButton.style.margin = '2px';
+        zoomOutButton.style.padding = '5px';
+        zoomOutButton.style.fontSize = '16px';
+        zoomOutButton.style.cursor = 'pointer';
+        zoomOutButton.title = 'Zoom Out';
+        buttonsContainer.appendChild(zoomOutButton);
+    
+        // Создание кнопки Reset Zoom
+        const resetButton = document.createElement('button');
+        resetButton.textContent = 'Reset';
+        resetButton.style.margin = '2px';
+        resetButton.style.padding = '5px';
+        resetButton.style.fontSize = '12px';
+        resetButton.style.cursor = 'pointer';
+        resetButton.title = 'Reset Zoom';
+        buttonsContainer.appendChild(resetButton);
+    
+        chartCard.appendChild(buttonsContainer);
+    
         chartContainer.appendChild(chartCard);
         chartContainer.classList.remove('hidden');
         messageContainer.classList.add('hidden');
-
+    
         figure.layout = figure.layout || {};
         figure.layout = {
             ...figure.layout,
@@ -253,19 +295,72 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             legend: { font: { size: 12 } }
         };
-
+    
         const config = {
             responsive: true,
-            displayModeBar: false
+            displayModeBar: false // Скрываем стандартную панель управления Plotly
         };
-
+    
         try {
             Plotly.newPlot(graphDiv, figure.data, figure.layout, config);
+    
+            // Обработчик для кнопки Zoom In
+            zoomInButton.addEventListener('click', () => {
+                const currentLayout = graphDiv.layout;
+                const xRange = currentLayout.xaxis.range;
+                const yRange = currentLayout.yaxis.range;
+    
+                if (xRange && yRange) {
+                    const xCenter = (xRange[0] + xRange[1]) / 2;
+                    const yCenter = (yRange[0] + yRange[1]) / 2;
+                    const xWidth = (xRange[1] - xRange[0]) * 0.5; // Уменьшаем диапазон до 50%
+                    const yHeight = (yRange[1] - yRange[0]) * 0.5;
+    
+                    const newXRange = [xCenter - xWidth / 2, xCenter + xWidth / 2];
+                    const newYRange = [yCenter - yHeight / 2, yCenter + yHeight / 2];
+    
+                    Plotly.relayout(graphDiv, {
+                        'xaxis.range': newXRange,
+                        'yaxis.range': newYRange
+                    });
+                }
+            });
+    
+            // Обработчик для кнопки Zoom Out
+            zoomOutButton.addEventListener('click', () => {
+                const currentLayout = graphDiv.layout;
+                const xRange = currentLayout.xaxis.range;
+                const yRange = currentLayout.yaxis.range;
+    
+                if (xRange && yRange) {
+                    const xCenter = (xRange[0] + xRange[1]) / 2;
+                    const yCenter = (yRange[0] + yRange[1]) / 2;
+                    const xWidth = (xRange[1] - xRange[0]) * 2; // Увеличиваем диапазон до 200%
+                    const yHeight = (yRange[1] - yRange[0]) * 2;
+    
+                    const newXRange = [xCenter - xWidth / 2, xCenter + xWidth / 2];
+                    const newYRange = [yCenter - yHeight / 2, yCenter + yHeight / 2];
+    
+                    Plotly.relayout(graphDiv, {
+                        'xaxis.range': newXRange,
+                        'yaxis.range': newYRange
+                    });
+                }
+            });
+    
+            // Обработчик для кнопки Reset Zoom
+            resetButton.addEventListener('click', () => {
+                Plotly.relayout(graphDiv, {
+                    'xaxis.autorange': true,
+                    'yaxis.autorange': true
+                });
+            });
+    
         } catch (error) {
             console.error('Ошибка при отрисовке графика:', error);
             showMessage('Ошибка при отрисовке графика. Проверьте данные.', 'error');
         }
-    }
+    }    
 
     clearChartsButton.addEventListener('click', () => {
         chartContainer.innerHTML = '';
