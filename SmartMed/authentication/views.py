@@ -1,12 +1,9 @@
-"""
-Модуль для обработки представлений и API, включая регистрацию, вход и анализ данных.
-"""
-
 import json
 import logging
 import pandas as pd
 import tempfile
 import os
+import numpy as np
 
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -18,7 +15,6 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from tempfile import NamedTemporaryFile
 from .renderers import UserJSONRenderer
 from .serializers import LoginSerializer, RegistrationSerializer, UserSerializer
 from .descriptive import process_json_descriptive
@@ -28,7 +24,7 @@ from .comparatibe import process_json_comparative
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-# Глобальная переменная для хранения загруженного файла
+# Глобальная переменная для хранения загруженного DataFrame для каждого пользователя
 DATAFRAME_STORAGE = {}
 
 class RegistrationAPIView(APIView):
@@ -152,7 +148,11 @@ class FileUploadApi(APIView):
             if not file.name.endswith(('.xls', '.xlsx', '.csv')):
                 return JsonResponse({'error': 'Неверный тип файла'}, status=400)
 
-            df = pd.read_excel(file) if file.name.endswith(('.xls', '.xlsx')) else pd.read_csv(file)
+            if file.name.endswith(('.xls', '.xlsx')):
+                df = pd.read_excel(file)
+            else:
+                df = pd.read_csv(file)
+
             DATAFRAME_STORAGE[user_id] = df
             columns = df.columns.tolist()
             logger.debug("Загруженные колонки: %s", columns)
@@ -160,6 +160,69 @@ class FileUploadApi(APIView):
         except Exception as e:
             logger.error("Ошибка при обработке загруженного файла: %s", str(e))
             return JsonResponse({'error': f'Ошибка при обработке файла'}, status=500)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class DescriptiveStatsApi(APIView):
+    """
+    API для получения описательной статистики по загруженному файлу.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user_id = request.user.id
+        df = DATAFRAME_STORAGE.get(user_id)
+
+        if df is None:
+            return JsonResponse({'error': 'Данные не найдены. Сначала загрузите файл.'}, status=400)
+
+        try:
+            # Получаем описательную статистику
+            desc = df.describe(include='all').T.fillna('')
+            stats_dict = desc.to_dict()
+
+            # Инициализация метрик для геометрического среднего и вариации
+            geom_mean = {}
+            variation = {}
+
+            # Обработка числовых столбцов
+            numeric_cols = df.select_dtypes(include=[np.number]).columns
+            for col in numeric_cols:
+                positive_values = df[col].dropna()
+                positive_values = positive_values[positive_values > 0]
+                if len(positive_values) > 0:
+                    gmean = np.exp(np.mean(np.log(positive_values)))
+                    geom_mean[col] = gmean
+                    # Вариация = std/mean
+                    if positive_values.mean() != 0:
+                        variation[col] = positive_values.std() / positive_values.mean()
+                    else:
+                        variation[col] = ''
+                else:
+                    geom_mean[col] = ''
+                    variation[col] = ''
+
+            # Перестраиваем stats_dict для соответствия по колонкам
+            per_column_stats = {}
+            for metric, columns in stats_dict.items():
+                for col, value in columns.items():
+                    if col not in per_column_stats:
+                        per_column_stats[col] = {}
+                    per_column_stats[col][metric] = value
+
+            # Добавляем показатели geom_mean и variation только для числовых столбцов
+            for col in numeric_cols:
+                per_column_stats[col]['geom_mean'] = geom_mean.get(col, '-')
+                per_column_stats[col]['variation'] = variation.get(col, '-')
+
+            # Проверка наличия хотя бы одной числовой колонки
+            if not len(numeric_cols):
+                return JsonResponse({'error': 'В загруженном файле нет числовых столбцов для отображения метрик.'}, status=400)
+
+            return JsonResponse({'stats': per_column_stats}, json_dumps_params={'ensure_ascii': False, 'indent': 2}, status=200)
+        except Exception as e:
+            logger.error("Ошибка при формировании статистики: %s", str(e))
+            return JsonResponse({'error': 'Ошибка при формировании статистики.'}, status=500)
+
 
 @method_decorator(csrf_exempt, name='dispatch')
 class GenerateChartApi(APIView):
@@ -184,7 +247,6 @@ class GenerateChartApi(APIView):
         selected_columns = request.data.get('selected_columns', df.columns.tolist())
         column = request.data.get('column', '')
 
-        # Отладочные сообщения
         logger.debug("Полученные данные от клиента:")
         logger.debug(f"chart_type: {chart_type}")
         logger.debug(f"x_axis: {x_axis}")
@@ -192,36 +254,34 @@ class GenerateChartApi(APIView):
         logger.debug(f"selected_columns: {selected_columns}")
         logger.debug(f"column: {column}")
 
-        # Проверка на наличие осей для scatter_plot и line_chart
-        if chart_type in ['scatter_plot', 'line_chart'] and (not x_axis or not y_axis):
-            return JsonResponse({'error': 'Для scatter_plot и line_chart необходимо указать оси X и Y.'}, status=400)
+        if chart_type in ['scatter_plot', 'line_chart', 'logarithmic_chart'] and (not x_axis or not y_axis):
+            return JsonResponse({'error': 'Для данного типа графика необходимо указать оси X и Y.'}, status=400)
         if chart_type == 'pie_chart' and not column:
             return JsonResponse({'error': 'Для круговой диаграммы необходимо выбрать столбец.'}, status=400)
 
-        # Создаем временный файл с данными
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.xlsx') as temp_file:
-            df.to_excel(temp_file.name, index=False)
-            temp_file_path = temp_file.name
-
-        # Формируем входные данные для process_json
-        input_json = {
-            "data_path": temp_file_path,
-            "missing_data_method": "fill_mean",
-            "graphs": [
-                {
-                    "type": chart_type,
-                    "columns": selected_columns,
-                    "x": x_axis,
-                    "y": y_axis,
-                    "column": column
-                }
-            ]
-        }
-
         try:
-            # Обрабатываем JSON-данные с помощью функции process_json
+            # Создаем временный файл с данными
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.xlsx') as temp_file:
+                df.to_excel(temp_file.name, index=False)
+                temp_file_path = temp_file.name
+
+            # Формируем входные данные для process_json_descriptive
+            input_json = {
+                "data_path": temp_file_path,
+                "missing_data_method": "fill_mean",
+                "graphs": [
+                    {
+                        "type": chart_type,
+                        "columns": selected_columns,
+                        "x": x_axis,
+                        "y": y_axis,
+                        "column": column
+                    }
+                ]
+            }
+
             result = process_json_descriptive(json.dumps(input_json))
-            logger.debug("Результат process_json: %s", result)
+            logger.debug("Результат process_json_descriptive: %s", result)
 
             # Удаляем временный файл
             os.remove(temp_file_path)
@@ -229,13 +289,11 @@ class GenerateChartApi(APIView):
             if isinstance(result, str):
                 result = json.loads(result)
 
-            # Получаем данные графика
             graph_data = result.get(chart_type)
             if graph_data and 'figure' in graph_data:
-                # Возвращаем данные графика в формате JSON
                 return JsonResponse(graph_data, status=200)
             else:
-                error_message = graph_data.get('error', 'Неизвестная ошибка при генерации графика.')
+                error_message = graph_data.get('error', 'Неизвестная ошибка при генерации графика.') if graph_data else 'Неизвестная ошибка при генерации графика.'
                 return JsonResponse({'error': error_message}, status=400)
 
         except Exception as e:
@@ -264,6 +322,7 @@ class CustomAnalysisApi(APIView):
             return JsonResponse({'error': 'Не указаны тесты для анализа.'}, status=400)
 
         try:
+            # Создаем временный файл с данными
             with tempfile.NamedTemporaryFile(delete=False, suffix='.csv') as temp_file:
                 df.to_csv(temp_file.name, index=False)
                 temp_file_path = temp_file.name
@@ -299,4 +358,3 @@ class CustomAnalysisApi(APIView):
         except Exception as e:
             logger.error("Ошибка выполнения анализа: %s", str(e))
             return JsonResponse({'error': f'Ошибка выполнения анализа: {str(e)}'}, status=500)
-

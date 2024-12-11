@@ -6,25 +6,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const progressBar = document.getElementById('progress-bar');
     const chartOptions = document.getElementById('chart-options');
     const chartTypeSelect = document.getElementById('chart-type');
-    const chartTooltip = document.getElementById('chart-tooltip'); // Исправление: объявлена переменная
+    const chartTooltip = document.getElementById('chart-tooltip');
     const buildChartButton = document.getElementById('build-chart');
     const clearChartsButton = document.getElementById('clear-charts');
     const chartContainer = document.getElementById('chart-container');
     const checkboxContainer = document.getElementById('checkbox-container');
+    const statsContainer = document.getElementById('stats-container');
+    const statsDescriptionContainer = document.getElementById('stats-description-container');
     let columns = [];
-    let uploadedFilePath = '';
 
     const chartDescriptions = {
-        scatter_matrix: "Матрица рассеяния: это диаграмма, где данные представлены точками на плоскости. Используется для визуального анализа взаимосвязей между двумя переменными. Сила корреляции определяется близостью точек на графике.",
-        histogram: "Гистограмма: это графическое представление распределения данных по интервалам. Помогает визуально оценить форму распределения данных и выявить его особенности, такие как мода, средние значения и разброс.",
-        heatmap: "Тепловая карта (хитмап): это визуальный инструмент для отображения плотности распределения значений данных и выявления их корреляций с помощью цветовой палитры.",
-        scatter_plot: "Диаграмма рассеяния: показывает связь между двумя переменными. Используется для анализа корреляций и выявления аномалий.",
-        box_plot: "Ящиковая диаграмма: визуализирует медиану, квартили, разброс данных и выбросы. Позволяет оценить диапазон и распределение значений в выборке.",
-        pie_chart: "Круговая диаграмма: отображает доли или процентное соотношение группы данных относительно всей совокупности.",
-        multiple_histograms: "Множественная гистограмма: включает несколько гистограмм для сравнения форм и плотности распределений между разными группами.",
-        line_chart: "Линейный график: используется для отображения изменения значений одной или нескольких переменных во времени или другой зависимости.",
-        logarithmic_chart: "Логарифмический график: это график, где одна или обе оси используют логарифмическую шкалу. Применяется для анализа данных с широким диапазоном значений."
-    };    
+        scatter_matrix: "Матрица рассеяния: это диаграмма, где данные представлены точками на плоскости...",
+        histogram: "Гистограмма: это графическое представление распределения данных по интервалам...",
+        heatmap: "Тепловая карта: это визуальный инструмент для отображения плотности распределения...",
+        scatter_plot: "Диаграмма рассеяния: показывает связь между двумя переменными...",
+        box_plot: "Ящиковая диаграмма: визуализирует медиану, квартили, разброс данных и выбросы...",
+        pie_chart: "Круговая диаграмма: отображает доли или процентное соотношение группы данных...",
+        multiple_histograms: "Множественная гистограмма: включает несколько гистограмм для сравнения...",
+        line_chart: "Линейный график: используется для отображения изменения значений во времени...",
+        logarithmic_chart: "Логарифмический график: график с логарифмической шкалой..."
+    };
 
     chartTypeSelect.addEventListener('change', () => {
         const selectedType = chartTypeSelect.value;
@@ -37,9 +38,10 @@ document.addEventListener('DOMContentLoaded', () => {
     uploadForm.addEventListener('submit', async (event) => {
         event.preventDefault();
 
-        // Hide elements and clear chart container
-        hideElements(['messageContainer', 'chartOptions', 'chartContainer']);
+        hideElements(['message-container', 'chart-options', 'chart-container', 'stats-container', 'stats-description-container']);
         chartContainer.innerHTML = '';
+        statsContainer.innerHTML = '';
+        statsDescriptionContainer.innerHTML = '';
 
         const file = fileInput.files[0];
         if (!file) {
@@ -84,9 +86,11 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 showMessage('Файл успешно загружен.', 'success');
                 columns = data.columns;
-                uploadedFilePath = data.file_path; // Get the file path
                 createCheckboxes(columns);
                 chartOptions.classList.remove('hidden');
+
+                // После успешной загрузки файла получаем описательную статистику
+                fetchDescriptiveStats(token);
             }
         } catch (error) {
             progressContainer.style.display = 'none';
@@ -111,8 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function createCheckboxes(columns) {
-        checkboxContainer.innerHTML = ''; // Clear the container
-
+        checkboxContainer.innerHTML = '';
         columns.forEach(column => {
             const label = document.createElement('label');
             label.textContent = column;
@@ -123,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
             checkbox.value = column;
 
             label.prepend(checkbox);
-            label.className = 'checkbox-label'; // Add class for styling
+            label.className = 'checkbox-label';
             checkboxContainer.appendChild(label);
         });
     }
@@ -132,7 +135,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedGraph = chartTypeSelect.value;
         const selectedColumns = Array.from(checkboxContainer.querySelectorAll('input[name="columns"]:checked')).map(cb => cb.value);
 
-        // Validate that at least one column is selected
         if (selectedColumns.length === 0) {
             showMessage('Ошибка: Выберите хотя бы один столбец.', 'error');
             return;
@@ -140,34 +142,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let x_axis = null;
         let y_axis = null;
-        let column = null; // For pie_chart
+        let column = null;
 
-        // Logic for charts requiring a specific number of columns
-        if (selectedGraph === 'scatter_plot' || selectedGraph === 'line_chart' || selectedGraph === 'logarithmic_chart') {
+        if (['scatter_plot', 'line_chart', 'logarithmic_chart'].includes(selectedGraph)) {
             if (selectedColumns.length !== 2) {
                 showMessage('Ошибка: Для этого графика необходимо выбрать ровно два столбца.', 'error');
                 return;
             }
-            // Assign first column as x_axis, second as y_axis
             x_axis = selectedColumns[0];
             y_axis = selectedColumns[1];
         }
 
-        // Validation for scatter_matrix
-        if (selectedGraph === 'scatter_matrix') {
-            if (selectedColumns.length < 3) {
-                showMessage('Ошибка: Выберите минимум 3 столбца либо постройте график через Диаграмма Рассеяния.', 'error');
-                return;
-            }
+        if (selectedGraph === 'scatter_matrix' && selectedColumns.length < 3) {
+            showMessage('Ошибка: Для матрицы рассеяния выберите минимум 3 столбца.', 'error');
+            return;
         }
 
-        // Validation for pie_chart
         if (selectedGraph === 'pie_chart') {
             if (selectedColumns.length !== 1) {
                 showMessage('Ошибка: Для круговой диаграммы необходимо выбрать ровно один столбец.', 'error');
                 return;
             }
-            // Assign the selected column as column
             column = selectedColumns[0];
         }
 
@@ -179,17 +174,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const requestData = {
             chart_type: selectedGraph,
-            selected_columns: selectedColumns,
-            data_path: uploadedFilePath // Pass the file path
+            selected_columns: selectedColumns
         };
 
-        // Add x_axis and y_axis if necessary
         if (x_axis && y_axis) {
             requestData.x_axis = x_axis;
             requestData.y_axis = y_axis;
         }
-
-        // Add column if necessary
         if (column) {
             requestData.column = column;
         }
@@ -211,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return response.json();
         })
         .then(data => {
-            console.log('Полученные данные от сервера:', data); // Logging
+            console.log('Полученные данные от сервера:', data);
             if (data.error) {
                 showMessage(data.error, 'error');
             } else if (data.figure) {
@@ -221,92 +212,54 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         })
         .catch(error => {
-            console.error('Ошибка при запросе:', error); // Logging
+            console.error('Ошибка при запросе:', error);
             showMessage(`Ошибка при запросе на сервер: ${error.message}`, 'error');
         });
     });
 
     function displayPlotlyChart(figure) {
-        // Check for data and its correctness
         if (!figure || !figure.data || !Array.isArray(figure.data) || figure.data.length === 0) {
             console.error('Ошибка: Данные для графика отсутствуют или некорректны.', figure);
             showMessage('Ошибка: Данные для графика отсутствуют или некорректны.', 'error');
             return;
         }
 
-        // Create a chart card
         const chartCard = document.createElement('div');
         chartCard.className = 'chart-card';
 
-        // Create a container for the chart
         const graphDiv = document.createElement('div');
         chartCard.appendChild(graphDiv);
 
-        // Add the card to the chart container
         chartContainer.appendChild(chartCard);
         chartContainer.classList.remove('hidden');
         messageContainer.classList.add('hidden');
 
-        // Ensure layout is defined
         figure.layout = figure.layout || {};
-
-        // Update layout for responsiveness
         figure.layout = {
             ...figure.layout,
             autosize: true,
-            margin: {
-                l: 50, r: 50, t: 50, b: 50
-            },
-            font: {
-                family: 'Montserrat, sans-serif',
-                size: 12,
-                color: '#333'
-            },
-            title: {
-                text: figure.layout.title?.text || 'График',
-                font: {
-                    size: 16
-                }
-            },
+            margin: { l: 50, r: 50, t: 50, b: 50 },
+            font: { family: 'Montserrat, sans-serif', size: 12, color: '#333' },
+            title: { text: figure.layout.title?.text || 'График', font: { size: 16 } },
             plot_bgcolor: '#ffffff',
             paper_bgcolor: '#ffffff',
             xaxis: {
-                title: {
-                    text: figure.layout.xaxis?.title?.text || 'Ось X',
-                    font: {
-                        size: 14
-                    }
-                },
-                tickfont: {
-                    size: 12
-                }
+                title: { text: figure.layout.xaxis?.title?.text || 'Ось X', font: { size: 14 } },
+                tickfont: { size: 12 }
             },
             yaxis: {
-                title: {
-                    text: figure.layout.yaxis?.title?.text || 'Ось Y',
-                    font: {
-                        size: 14
-                    }
-                },
-                tickfont: {
-                    size: 12
-                }
+                title: { text: figure.layout.yaxis?.title?.text || 'Ось Y', font: { size: 14 } },
+                tickfont: { size: 12 }
             },
-            legend: {
-                font: {
-                    size: 12
-                }
-            }
+            legend: { font: { size: 12 } }
         };
 
-        // Plotly configuration
         const config = {
             responsive: true,
-            displayModeBar: false // Disable the toolbar
+            displayModeBar: false
         };
 
         try {
-            // Display the chart
             Plotly.newPlot(graphDiv, figure.data, figure.layout, config);
         } catch (error) {
             console.error('Ошибка при отрисовке графика:', error);
@@ -314,9 +267,117 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Button to clear charts
     clearChartsButton.addEventListener('click', () => {
         chartContainer.innerHTML = '';
         chartContainer.classList.add('hidden');
     });
+
+    // Функция для получения описательной статистики
+    function fetchDescriptiveStats(token) {
+        fetch('/get_descriptive_stats/', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Token ${token}`
+            }
+        })
+        .then(res => {
+            if (!res.ok) {
+                return res.json().then(errData => {
+                    throw new Error(errData.error || 'Неизвестная ошибка');
+                });
+            }
+            return res.json();
+        })
+        .then(data => {
+            console.log('Полученные данные статистики:', data); // Для отладки
+            if (data.error) {
+                showMessage(data.error, 'error');
+            } else if (data.stats) {
+                renderDescriptiveTable(data.stats);
+                renderDescriptions();
+                statsContainer.classList.remove('hidden');
+                statsDescriptionContainer.classList.remove('hidden');
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка получения статистики:', error);
+            showMessage('Ошибка получения статистики.', 'error');
+        });
+    }
+
+    function renderDescriptiveTable(stats) {
+        // Явно указываем желаемые столбцы, включая 'geom_mean' и 'variation'
+        const desiredColumns = ['count', 'mean', 'std', 'min', '25%', '50%', '75%', 'max', 'geom_mean', 'variation'];
+        
+        const container = document.createElement('div');
+        container.className = 'descriptive-table-container';
+    
+        const table = document.createElement('table');
+        table.className = 'descriptive-table';
+    
+        // Создание заголовка таблицы
+        const thead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+    
+        // Первый столбец заголовка — "Метрики"
+        const thMetric = document.createElement('th');
+        thMetric.textContent = 'Метрики';
+        headerRow.appendChild(thMetric);
+    
+        // Добавляем заголовки для желаемых столбцов
+        desiredColumns.forEach(columnName => {
+            const th = document.createElement('th');
+            th.textContent = columnName;
+            headerRow.appendChild(th);
+        });
+    
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+    
+        // Создание тела таблицы
+        const tbody = document.createElement('tbody');
+    
+        // Итерация по каждой колонке в stats
+        Object.keys(stats).forEach(columnName => {
+            const row = document.createElement('tr');
+    
+            // Первая ячейка — имя колонки
+            const columnCell = document.createElement('td');
+            columnCell.textContent = columnName;
+            row.appendChild(columnCell);
+    
+            // Добавляем значения для желаемых метрик
+            desiredColumns.forEach(metric => {
+                const cell = document.createElement('td');
+                const value = stats[columnName][metric];
+                cell.textContent = value !== undefined && value !== null ? value : '-';
+                row.appendChild(cell);
+            });
+    
+            tbody.appendChild(row);
+        });
+    
+        table.appendChild(tbody);
+        container.appendChild(table);
+    
+        // Добавляем контейнер с таблицей в statsContainer
+        statsContainer.innerHTML = ''; // Очищаем предыдущие данные
+        statsContainer.appendChild(container);
+    }      
+
+    function renderDescriptions() {
+        statsDescriptionContainer.className = 'description-container';
+        statsDescriptionContainer.innerHTML = `
+            <h2>Описание статистических показателей</h2>
+            <p><strong>Среднее (mean)</strong> - значение, рассчитываемое делением суммы всех значений выборки на её объём.</p>
+            <p><strong>Стандартное отклонение (std)</strong> - мера разброса значений вокруг среднего. Чем больше std, тем больше вариабельность данных.</p>
+            <p><strong>Количество (count)</strong> - количество наблюдений (строк) в выборке.</p>
+            <p><strong>Квартиль (25%, 50%, 75%)</strong> - значения, которые делят упорядоченную выборку на четыре части. 50% - это медиана.</p>
+            <p><strong>Минимум (min)</strong> - наименьшее значение выборки.</p>
+            <p><strong>Максимум (max)</strong> - наибольшее значение выборки.</p>
+            <p><strong>Геометрическое среднее (geom_mean)</strong> - среднее значение, рассчитанное через логарифмы, отражает средний темп роста.</p>
+            <p><strong>Вариация (variation)</strong> - коэффициент вариации (std/mean), мера относительного разброса данных.</p>
+        `;
+    }
+
 });

@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (
     LoginAPIView, RegistrationAPIView, UserRetrieveUpdateAPIView,
     index, reg, log, profile, analyze, modules, comparatibe_analysis_view,
-    predictive_analysis_view,
+    predictive_analysis_view, DescriptiveStatsApi,
     FileUploadApi, GenerateChartApi, CustomAnalysisApi
 )
 
@@ -14,7 +14,8 @@ urlpatterns = [
     path("reg", reg, name="reg"),
     path('analyze/', analyze, name='analyze'),
     path("profile", profile, name="profile"),
-    path("modules", modules, name="modules"), 
+    path("modules", modules, name="modules"),
+    path('get_descriptive_stats/', DescriptiveStatsApi.as_view(), name='get_descriptive_stats'),
     path('predictive-analysis/', predictive_analysis_view, name='predictive_analysis'),
     path('comparatibe-analysis/', comparatibe_analysis_view, name='comparatibe_analysis'),
     path('custom-analyze/', CustomAnalysisApi.as_view(), name='custom_analyze'),

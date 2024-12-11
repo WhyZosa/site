@@ -1,5 +1,3 @@
-/* analyze.css */
-
 .tooltip {
     position: relative;
     display: inline-block;
@@ -57,50 +55,45 @@ body {
 
 /* Шапка */
 .header {
-    position: relative; /* Устанавливаем относительное позиционирование для контейнера */
+    position: relative;
     display: flex;
-    justify-content: center; /* Центрируем содержимое по горизонтали */
+    justify-content: center;
     align-items: center;
-    height: 100px; /* Фиксируем высоту верхней части */
-    background-color: #ffffff; /* Добавляем фон для верхней части */
-    border-bottom: 2px solid rgba(0, 0, 0, 0.1); /* Нижняя граница */
+    height: 100px;
+    background-color: #ffffff;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.1);
 }
 
 .logo {
-    width: 60px; /* Размер логотипа */
+    width: 60px;
     height: auto;
     border-radius: 50%;
 }
 
 .logo-container {
     display: flex;
-    align-items: center; /* Центрируем логотип по вертикали */
-    margin-right: auto; /* Удерживаем логотип слева */
-    padding-left: 20px; /* Сдвигаем логотип правее */
+    align-items: center;
+    margin-right: auto;
+    padding-left: 20px;
 }
 
 .nav-bar {
-    position: absolute; /* Абсолютное позиционирование внутри `.header` */
-    top: 50%; /* Относительно контейнера `.header` */
-    left: 50%; /* Центрируем по горизонтали */
-    transform: translate(-50%, -50%); /* Точное центрирование */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 10px 20px; /* Отступы */
-    border-radius: 8px; /* Закруглённые углы */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 .nav-list {
-    list-style-type: none; /* Убираем стандартные маркеры списка */
-    display: flex; /* Flexbox для выравнивания пунктов в строку */
-    gap: 20px; /* Промежутки между элементами */
-    margin: 0; /* Убираем внешние отступы */
-    padding: 0; /* Убираем внутренние отступы */
+    list-style-type: none;
+    display: flex;
+    gap: 20px;
+    margin: 0;
+    padding: 0;
 }
 
 .nav-list li {
-    margin: 0; /* Убираем лишние отступы */
+    margin: 0;
 }
 
 .nav-button {
@@ -180,18 +173,18 @@ body {
     border-radius: 5px;
     margin: 10px 0;
     font-weight: bold;
+    max-width: 500px;
+    max-height: 100px;
+    overflow: auto;
+    word-wrap: break-word;
+    padding: 10px;
+    margin: 10px auto;
+    border-radius: 5px;
 }
 
 .message-container.success {
     background-color: #d4edda;
     color: #155724;
-    max-width: 500px; /* Максимальная ширина */
-    max-height: 100px; /* Максимальная высота */
-    overflow: auto; /* Скроллинг, если текст превышает высоту */
-    word-wrap: break-word; /* Перенос длинных слов */
-    padding: 10px; /* Внутренние отступы */
-    margin: 10px auto; /* Центрирование снаружи */
-    border-radius: 5px; /* Закругленные углы */
 }
 
 .message-container.error {
@@ -258,6 +251,48 @@ body {
     border-radius: 8px;
     padding: 10px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Таблица описательной статистики */
+.descriptive-table-container {
+    margin-top: 20px;
+    overflow-x: auto;
+}
+
+.descriptive-table {
+    border-collapse: collapse;
+    width: 100%;
+    max-width: 800px;
+    margin: 20px auto;
+    background-color: #fff;
+}
+
+.descriptive-table th, .descriptive-table td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.descriptive-table th {
+    background-color: #f0f0f0;
+    font-weight: bold;
+}
+
+/* Блок описания статистики */
+.description-container {
+    max-width: 800px;
+    margin: 20px auto;
+    text-align: left;
+    font-size: 0.95rem;
+}
+
+.description-container h2 {
+    margin-bottom: 10px;
+}
+
+.description-container p {
+    margin: 5px 0;
 }
 
 /* Футер */
