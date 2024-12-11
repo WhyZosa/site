@@ -36,7 +36,7 @@
             <!-- Контейнер для сообщений -->
             <div id="message-container" class="message-container hidden"></div>
             <!-- Прогресс-бар -->
-            <div id="progress-container" style="display: none; justify-content: center; align-items: center;">
+            <div id="progress-container" class="progress-container hidden">
                 <progress id="progress-bar" max="100" value="0"></progress>
             </div>
             <!-- Опции для построения графиков -->
@@ -63,17 +63,17 @@
                 <!-- Контейнер для выбора столбцов -->
                 <label for="columns-select" class="chart-label">Выберите столбцы:</label>
                 <div id="checkbox-container" class="checkbox-container"></div>
-                <button id="build-chart" class="btn-submit">Построить график</button>
-                <button id="clear-charts" class="btn-submit">Очистить графики</button>
+                <div class="buttons-group">
+                    <button id="build-chart" class="btn-submit">Построить график</button>
+                    <button id="clear-charts" class="btn-submit">Очистить графики</button>
+                </div>
             </div>
             <!-- Контейнер для графиков -->
             <div id="chart-container" class="chart-container hidden"></div>
-
             <!-- Контейнер для описательной статистики -->
-            <div id="stats-container" class="hidden"></div>
+            <div id="stats-container" class="stats-container hidden"></div>
             <!-- Контейнер для описания статистических показателей -->
-            <div id="stats-description-container" class="hidden"></div>
-
+            <div id="stats-description-container" class="description-container hidden"></div>
         </main>
         <!-- Футер страницы -->
         <footer class="footer-container">

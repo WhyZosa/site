@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Получение элементов DOM
     const uploadForm = document.getElementById('file-upload-form');
     const fileInput = document.getElementById('file-input');
     const messageContainer = document.getElementById('message-container');
@@ -15,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const statsDescriptionContainer = document.getElementById('stats-description-container');
     let columns = [];
 
+    // Описания типов графиков
     const chartDescriptions = {
         scatter_matrix: "Матрица рассеяния: это диаграмма, где данные представлены точками на плоскости...",
         histogram: "Гистограмма: это графическое представление распределения данных по интервалам...",
@@ -27,14 +29,17 @@ document.addEventListener('DOMContentLoaded', () => {
         logarithmic_chart: "Логарифмический график: график с логарифмической шкалой..."
     };
 
+    // Обработчик изменения типа графика
     chartTypeSelect.addEventListener('change', () => {
         const selectedType = chartTypeSelect.value;
         chartTooltip.textContent = chartDescriptions[selectedType] || "Выберите тип графика для анализа данных.";
     });
 
+    // Инициализация подсказки при загрузке страницы
     const initialType = chartTypeSelect.value;
     chartTooltip.textContent = chartDescriptions[initialType] || "Выберите тип графика для анализа данных.";
 
+    // Обработчик отправки формы загрузки файла
     uploadForm.addEventListener('submit', async (event) => {
         event.preventDefault();
 
@@ -99,12 +104,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Функция для отображения сообщений
     function showMessage(message, type) {
         messageContainer.classList.remove('hidden');
         messageContainer.textContent = message;
         messageContainer.className = `message-container ${type}`;
     }
 
+    // Функция для скрытия элементов
     function hideElements(elements) {
         elements.forEach(elementId => {
             const element = document.getElementById(elementId);
@@ -114,6 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Функция для создания чекбоксов на основе колонок данных
     function createCheckboxes(columns) {
         checkboxContainer.innerHTML = '';
         columns.forEach(column => {
@@ -131,6 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Обработчик нажатия на кнопку построения графика
     buildChartButton.addEventListener('click', () => {
         const selectedGraph = chartTypeSelect.value;
         const selectedColumns = Array.from(checkboxContainer.querySelectorAll('input[name="columns"]:checked')).map(cb => cb.value);
@@ -217,65 +226,28 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Функция для отображения графика Plotly с встроенными кнопками
     function displayPlotlyChart(figure) {
         if (!figure || !figure.data || !Array.isArray(figure.data) || figure.data.length === 0) {
             console.error('Ошибка: Данные для графика отсутствуют или некорректны.', figure);
             showMessage('Ошибка: Данные для графика отсутствуют или некорректны.', 'error');
             return;
         }
-    
+
         const chartCard = document.createElement('div');
         chartCard.className = 'chart-card';
-        chartCard.style.position = 'relative'; // Для абсолютного позиционирования кнопок
-    
+
         const graphDiv = document.createElement('div');
         chartCard.appendChild(graphDiv);
-    
-        // Создание контейнера для кнопок
-        const buttonsContainer = document.createElement('div');
-        buttonsContainer.style.position = 'absolute';
-        buttonsContainer.style.top = '10px';
-        buttonsContainer.style.right = '10px';
-        buttonsContainer.style.display = 'flex';
-        buttonsContainer.style.flexDirection = 'column';
-        buttonsContainer.style.zIndex = '1000'; // Поверх графика
-    
-        // Создание кнопки Zoom In
-        const zoomInButton = document.createElement('button');
-        zoomInButton.textContent = '+';
-        zoomInButton.style.margin = '2px';
-        zoomInButton.style.padding = '5px';
-        zoomInButton.style.fontSize = '16px';
-        zoomInButton.style.cursor = 'pointer';
-        zoomInButton.title = 'Zoom In';
-        buttonsContainer.appendChild(zoomInButton);
-    
-        // Создание кнопки Zoom Out
-        const zoomOutButton = document.createElement('button');
-        zoomOutButton.textContent = '-';
-        zoomOutButton.style.margin = '2px';
-        zoomOutButton.style.padding = '5px';
-        zoomOutButton.style.fontSize = '16px';
-        zoomOutButton.style.cursor = 'pointer';
-        zoomOutButton.title = 'Zoom Out';
-        buttonsContainer.appendChild(zoomOutButton);
-    
-        // Создание кнопки Reset Zoom
-        const resetButton = document.createElement('button');
-        resetButton.textContent = 'Reset';
-        resetButton.style.margin = '2px';
-        resetButton.style.padding = '5px';
-        resetButton.style.fontSize = '12px';
-        resetButton.style.cursor = 'pointer';
-        resetButton.title = 'Reset Zoom';
-        buttonsContainer.appendChild(resetButton);
-    
-        chartCard.appendChild(buttonsContainer);
-    
+
+        // Проверка типа графика
+        const isScatterMatrix = figure.type === 'splom'; // 'splom' - тип Scatter Matrix в Plotly
+
         chartContainer.appendChild(chartCard);
         chartContainer.classList.remove('hidden');
         messageContainer.classList.add('hidden');
-    
+
+        // Настройка layout графика
         figure.layout = figure.layout || {};
         figure.layout = {
             ...figure.layout,
@@ -295,73 +267,21 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             legend: { font: { size: 12 } }
         };
-    
+
         const config = {
             responsive: true,
-            displayModeBar: false // Скрываем стандартную панель управления Plotly
+            displayModeBar: true // Показываем встроенную панель инструментов Plotly
         };
-    
+
         try {
             Plotly.newPlot(graphDiv, figure.data, figure.layout, config);
-    
-            // Обработчик для кнопки Zoom In
-            zoomInButton.addEventListener('click', () => {
-                const currentLayout = graphDiv.layout;
-                const xRange = currentLayout.xaxis.range;
-                const yRange = currentLayout.yaxis.range;
-    
-                if (xRange && yRange) {
-                    const xCenter = (xRange[0] + xRange[1]) / 2;
-                    const yCenter = (yRange[0] + yRange[1]) / 2;
-                    const xWidth = (xRange[1] - xRange[0]) * 0.5; // Уменьшаем диапазон до 50%
-                    const yHeight = (yRange[1] - yRange[0]) * 0.5;
-    
-                    const newXRange = [xCenter - xWidth / 2, xCenter + xWidth / 2];
-                    const newYRange = [yCenter - yHeight / 2, yCenter + yHeight / 2];
-    
-                    Plotly.relayout(graphDiv, {
-                        'xaxis.range': newXRange,
-                        'yaxis.range': newYRange
-                    });
-                }
-            });
-    
-            // Обработчик для кнопки Zoom Out
-            zoomOutButton.addEventListener('click', () => {
-                const currentLayout = graphDiv.layout;
-                const xRange = currentLayout.xaxis.range;
-                const yRange = currentLayout.yaxis.range;
-    
-                if (xRange && yRange) {
-                    const xCenter = (xRange[0] + xRange[1]) / 2;
-                    const yCenter = (yRange[0] + yRange[1]) / 2;
-                    const xWidth = (xRange[1] - xRange[0]) * 2; // Увеличиваем диапазон до 200%
-                    const yHeight = (yRange[1] - yRange[0]) * 2;
-    
-                    const newXRange = [xCenter - xWidth / 2, xCenter + xWidth / 2];
-                    const newYRange = [yCenter - yHeight / 2, yCenter + yHeight / 2];
-    
-                    Plotly.relayout(graphDiv, {
-                        'xaxis.range': newXRange,
-                        'yaxis.range': newYRange
-                    });
-                }
-            });
-    
-            // Обработчик для кнопки Reset Zoom
-            resetButton.addEventListener('click', () => {
-                Plotly.relayout(graphDiv, {
-                    'xaxis.autorange': true,
-                    'yaxis.autorange': true
-                });
-            });
-    
         } catch (error) {
             console.error('Ошибка при отрисовке графика:', error);
             showMessage('Ошибка при отрисовке графика. Проверьте данные.', 'error');
         }
-    }    
+    }
 
+    // Обработчик нажатия на кнопку очистки графиков
     clearChartsButton.addEventListener('click', () => {
         chartContainer.innerHTML = '';
         chartContainer.classList.add('hidden');
@@ -400,6 +320,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Функция для отображения таблицы описательной статистики
     function renderDescriptiveTable(stats) {
         // Явно указываем желаемые столбцы, включая 'geom_mean' и 'variation'
         const desiredColumns = ['count', 'mean', 'std', 'min', '25%', '50%', '75%', 'max', 'geom_mean', 'variation'];
@@ -460,6 +381,7 @@ document.addEventListener('DOMContentLoaded', () => {
         statsContainer.appendChild(container);
     }      
 
+    // Функция для отображения описаний статистических показателей
     function renderDescriptions() {
         statsDescriptionContainer.className = 'description-container';
         statsDescriptionContainer.innerHTML = `
@@ -474,5 +396,4 @@ document.addEventListener('DOMContentLoaded', () => {
             <p><strong>Вариация (variation)</strong> - коэффициент вариации (std/mean), мера относительного разброса данных.</p>
         `;
     }
-
 });
