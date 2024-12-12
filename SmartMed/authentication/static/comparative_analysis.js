@@ -14,11 +14,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const chartContainer = document.getElementById('chart-container');
     const ksFields = document.getElementById('ks-fields');
     const tIndependentFields = document.getElementById('t-independent-fields'); // Новый блок
+    const tDependentFields = document.getElementById('t-dependent-fields'); // Блок для зависимых выборок
     const defaultFields = document.getElementById('default-fields');
     const independentVariableSelect = document.getElementById('independent-variable-select');
     const groupingVariableSelect = document.getElementById('grouping-variable-select');
     const tIndepIndependentVariableSelect = document.getElementById('t-indep-independent-variable-select'); // Новые поля
     const tIndepGroupingVariableSelect = document.getElementById('t-indep-grouping-variable-select');
+    const tDepVariable1Select = document.getElementById('t-dep-variable1-select'); // Поля для зависимых выборок
+    const tDepVariable2Select = document.getElementById('t-dep-variable2-select');
 
     let columns = [];
 
@@ -26,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const testDescriptions = {
         kolmogorov_smirnov: "Критерий Колмогорова-Смирнова предназначен для проверки гипотезы о соответствии выборки нормальному распределению.",
         t_criterion_student_independent: "Данный статистический метод служит для сравнения двух независимых между собой групп. Примеры сравниваемых величин: возраст в основной и контрольной группе, содержание глюкозы в крови пациентов, принимавших препарат или плацебо.",
-        t_criterion_student_dependent: "Т-критерий Стьюдента для зависимых выборок используется для сравнения средних значений в одной группе до и после воздействия.",
+        t_criterion_student_dependent: "Для применения t-критерия Стьюдента необходимо, чтобы исходные данные имели нормальное распределение. Данный метод используется для сравнения двух зависимых групп пациентов. Примеры сравниваемых величин: частота сердечных сокращений до и после приема препарата, содержание лейкоцитов в крови пациентов до и после лечения.",
         u_criterion_mann_whitney: "U-критерий Манна-Уитни используется для сравнения двух независимых выборок при отсутствии нормальности распределения.",
         t_criterion_wilcoxon: "Т-критерий Уилкоксона применяется для сравнения связанных выборок при отсутствии нормальности распределения.",
         chi2_pearson: "Критерий Хи-квадрат Пирсона позволяет проверить зависимость между двумя категориальными переменными.",
@@ -67,6 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Скрываем все специфические поля
         ksFields.classList.add('hidden');
         tIndependentFields.classList.add('hidden');
+        tDependentFields.classList.add('hidden');
         defaultFields.classList.add('hidden');
 
         // Показываем нужные поля в зависимости от выбранного теста
@@ -76,6 +80,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
             case 't_criterion_student_independent':
                 tIndependentFields.classList.remove('hidden');
+                break;
+            case 't_criterion_student_dependent':
+                tDependentFields.classList.remove('hidden');
                 break;
             default:
                 defaultFields.classList.remove('hidden');
@@ -104,6 +111,8 @@ document.addEventListener('DOMContentLoaded', () => {
         column2Select.classList.remove('input-error');
         tIndepIndependentVariableSelect.classList.remove('input-error'); // Новые поля
         tIndepGroupingVariableSelect.classList.remove('input-error'); // Новые поля
+        tDepVariable1Select.classList.remove('input-error'); // Поля для зависимых выборок
+        tDepVariable2Select.classList.remove('input-error'); // Поля для зависимых выборок
     }
 
     /**
@@ -152,6 +161,27 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    /**
+     * Функция для заполнения селекторов переменных для Т-критерия Стьюдента (зависимые выборки)
+     */
+    function populateTDepVariableSelects() {
+        // Очистка текущих опций
+        tDepVariable1Select.innerHTML = "<option value=''>-- Выберите первую переменную --</option>";
+        tDepVariable2Select.innerHTML = "<option value=''>-- Выберите вторую переменную --</option>";
+
+        columns.forEach(column => {
+            const option1 = document.createElement("option");
+            option1.value = column;
+            option1.textContent = column;
+            tDepVariable1Select.appendChild(option1);
+
+            const option2 = document.createElement("option");
+            option2.value = column;
+            option2.textContent = column;
+            tDepVariable2Select.appendChild(option2);
+        });
+    }
+
     // Обработчик отправки формы загрузки файла
     uploadForm.addEventListener('submit', async (event) => {
         event.preventDefault();
@@ -164,6 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
         columnSelection.classList.add('hidden');
         ksFields.classList.add('hidden');
         tIndependentFields.classList.add('hidden');
+        tDependentFields.classList.add('hidden');
 
         const file = fileInput.files[0];
         if (!file) {
@@ -197,6 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         populateColumnSelectOptions(columns);
                         populateKsVariableSelects();
                         populateTIndepVariableSelects(); // Заполнение для нового теста
+                        populateTDepVariableSelects(); // Заполнение для зависимых выборок
                         columnSelection.classList.remove('hidden');
                     }
                 } catch (e) {
@@ -298,6 +330,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 type: analysisType,
                 column1: tIndepIndependentVariable,
                 column2: tIndepGroupingVariable
+            });
+        } else if (analysisType === 't_criterion_student_dependent') {
+            const tDepVariable1 = tDepVariable1Select.value;
+            const tDepVariable2 = tDepVariable2Select.value;
+
+            if (!tDepVariable1 || !tDepVariable2) {
+                showMessage(analysisMessageContainer, 'Ошибка: Пожалуйста, выберите обе переменные для Т-критерия Стьюдента (зависимые выборки).', 'error');
+                return;
+            }
+
+            // Проверка, что выбранные переменные различны
+            if (tDepVariable1 === tDepVariable2) {
+                showMessage(analysisMessageContainer, 'Ошибка: Выберите разные переменные для анализа.', 'error');
+                return;
+            }
+
+            analysisData.tests.push({
+                type: analysisType,
+                column1: tDepVariable1,
+                column2: tDepVariable2
             });
         } else {
             const column1 = column1Select.value;
@@ -471,6 +523,14 @@ document.addEventListener('DOMContentLoaded', () => {
                             tIndepGroupingVariableSelect.classList.add('input-error');
                         }
                         break;
+                    case 't_criterion_student_dependent':
+                        if (testResult.error.includes('column1')) {
+                            tDepVariable1Select.classList.add('input-error');
+                        }
+                        if (testResult.error.includes('column2')) {
+                            tDepVariable2Select.classList.add('input-error');
+                        }
+                        break;
                     default:
                         if (testResult.error.includes('колонки') || testResult.error.includes('переменные')) {
                             column1Select.classList.add('input-error');
@@ -485,6 +545,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 column2Select.classList.remove('input-error');
                 tIndepIndependentVariableSelect.classList.remove('input-error'); // Новые поля
                 tIndepGroupingVariableSelect.classList.remove('input-error'); // Новые поля
+                tDepVariable1Select.classList.remove('input-error'); // Поля для зависимых выборок
+                tDepVariable2Select.classList.remove('input-error'); // Поля для зависимых выборок
 
                 // Создание таблицы с результатами теста
                 const table = document.createElement('table');
@@ -547,6 +609,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     const p2 = document.createElement('p');
                     p2.textContent = `Если p ≥ 0.05, принимается нулевая гипотеза, различия не являются статистически значимыми и носят случайный характер.`;
+
+                    explanation.appendChild(p1);
+                    explanation.appendChild(p2);
+
+                    section.appendChild(explanation);
+                } else if (testName === 't_criterion_student_dependent') {
+                    const explanation = document.createElement('div');
+                    explanation.classList.add('description-container');
+
+                    const p1 = document.createElement('p');
+                    p1.textContent = `Если p < 0.05, нулевая гипотеза отвергается, принимается альтернативная, различия между зависимыми группами обладают статистической значимостью и носят системный характер.`;
+
+                    const p2 = document.createElement('p');
+                    p2.textContent = `Если p ≥ 0.05, принимается нулевая гипотеза, различия между зависимыми группами не являются статистически значимыми и носят случайный характер.`;
 
                     explanation.appendChild(p1);
                     explanation.appendChild(p2);
