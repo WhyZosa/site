@@ -38,17 +38,23 @@
                 <label for="column2-select">Вторая колонка:</label>
                 <select id="column2-select" name="column2" class="select-input" required></select>
 
-                <label for="test-type">Выберите тип теста:</label>
+                <label for="test-type" class="chart-label">
+                    Выберите тип теста:
+                    <div class="tooltip" tabindex="0">
+                        ❓
+                        <span class="tooltip-text" id="test-tooltip">Выберите тип теста для анализа данных.</span>
+                    </div>
+                </label>
                 <select id="test-type" name="test_type" class="select-input" required>
-                    <option value="kolmogorov_smirnov">Kolmogorov-Smirnov</option>
-                    <option value="t_criterion_student_independent">Independent T-test</option>
-                    <option value="t_criterion_student_dependent">Dependent T-test</option>
-                    <option value="u_criterion_mann_whitney">Mann-Whitney U Test</option>
-                    <option value="t_criterion_wilcoxon">Wilcoxon Test</option>
-                    <option value="chi2_pearson">Chi-Squared Test</option>
-                    <option value="sensitivity_specificity">Sensitivity and Specificity</option>
-                    <option value="risk_relations">Risk Relations</option>
-                    <option value="odds_relations">Odds Relations</option>
+                    <option value="kolmogorov_smirnov">Критерий Колмогорова-Смирнова</option>
+                    <option value="t_criterion_student_independent">Т-критерий Стьюдента (независимые выборки)</option>
+                    <option value="t_criterion_student_dependent">Т-критерий Стьюдента (зависимые выборки)</option>
+                    <option value="u_criterion_mann_whitney">U-критерий Манна-Уитни</option>
+                    <option value="t_criterion_wilcoxon">Т-критерий Уилкоксона</option>
+                    <option value="chi2_pearson">Критерий Хи-квадрат Пирсона</option>
+                    <option value="sensitivity_specificity">Чувствительность и специфичность</option>
+                    <option value="risk_relations">Отношение рисков (RR)</option>
+                    <option value="odds_relations">Отношение шансов (OR)</option>
                 </select>
                 <button id="analyze-button" class="btn-submit">Выполнить анализ</button>
             </div>
@@ -58,6 +64,9 @@
             <div id="analysis-results" class="results-container hidden">
                 <!-- Результаты анализа будут отображаться здесь -->
             </div>
+
+            <!-- Контейнер для графиков -->
+            <div id="chart-container" class="chart-container hidden"></div>
         </main>
         <footer class="footer-container">
             <p class="contact-info">Связаться с нами:</p>

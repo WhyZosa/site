@@ -1,20 +1,55 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Получение элементов DOM
     const uploadForm = document.getElementById('file-upload-form');
     const fileInput = document.getElementById('file-input');
     const uploadMessageContainer = document.getElementById('upload-message-container');
-    const analysisMessageContainer = document.getElementById('analysis-message-container');
     const columnSelection = document.getElementById('column-selection');
     const column1Select = document.getElementById('column1-select');
     const column2Select = document.getElementById('column2-select');
+    const testTypeSelect = document.getElementById('test-type');
+    const testTooltip = document.getElementById('test-tooltip');
     const analyzeButton = document.getElementById('analyze-button');
+    const analysisMessageContainer = document.getElementById('analysis-message-container');
     const resultsContainer = document.getElementById('analysis-results');
+    const chartContainer = document.getElementById('chart-container');
+    const checkboxContainer = document.getElementById('checkbox-container');
 
-    uploadForm.addEventListener('submit', (event) => {
+    let columns = [];
+
+    // Описания типов тестов
+    const testDescriptions = {
+        kolmogorov_smirnov: "Критерий Колмогорова-Смирнова предназначен для проверки гипотезы о соответствии выборки нормальному распределению.",
+        t_criterion_student_independent: "Т-критерий Стьюдента для независимых выборок используется для сравнения средних значений двух независимых групп.",
+        t_criterion_student_dependent: "Т-критерий Стьюдента для зависимых выборок используется для сравнения средних значений в одной группе до и после воздействия.",
+        u_criterion_mann_whitney: "U-критерий Манна-Уитни используется для сравнения двух независимых выборок при отсутствии нормальности распределения.",
+        t_criterion_wilcoxon: "Т-критерий Уилкоксона применяется для сравнения связанных выборок при отсутствии нормальности распределения.",
+        chi2_pearson: "Критерий Хи-квадрат Пирсона позволяет проверить зависимость между двумя категориальными переменными.",
+        sensitivity_specificity: "Чувствительность и специфичность оценивают точность диагностического теста. Чувствительность — вероятность положительного результата при наличии заболевания. Специфичность — вероятность отрицательного результата при отсутствии заболевания.",
+        risk_relations: "Отношение рисков (RR) сравнивает вероятность наступления события в двух группах. Если RR > 1, риск выше в первой группе; если RR < 1, риск ниже.",
+        odds_relations: "Отношение шансов (OR) оценивает вероятность наступления события в одной группе по сравнению с другой. Если OR > 1, событие более вероятно в первой группе; если OR < 1, менее вероятно."
+    };
+
+    // Функция для обновления текста тултипа
+    function updateTestTooltip() {
+        const selectedTest = testTypeSelect.value;
+        testTooltip.textContent = testDescriptions[selectedTest] || "Выберите тип теста для анализа данных.";
+    }
+
+    // Обработчик изменения типа теста
+    testTypeSelect.addEventListener('change', updateTestTooltip);
+
+    // Инициализация текста тултипа при загрузке страницы
+    updateTestTooltip();
+
+    // Обработчик отправки формы загрузки файла
+    uploadForm.addEventListener('submit', async (event) => {
         event.preventDefault();
 
         hideMessage(uploadMessageContainer);
         hideMessage(analysisMessageContainer);
         resultsContainer.innerHTML = '';
+        chartContainer.innerHTML = '';
+        chartContainer.classList.add('hidden');
         columnSelection.classList.add('hidden');
 
         const file = fileInput.files[0];
@@ -45,7 +80,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         showMessage(uploadMessageContainer, data.error, 'error');
                     } else {
                         showMessage(uploadMessageContainer, 'Файл успешно загружен.', 'success');
-                        populateColumnSelectOptions(data.columns);
+                        columns = data.columns;
+                        populateColumnSelectOptions(columns);
                         columnSelection.classList.remove('hidden');
                     }
                 } catch (e) {
@@ -69,6 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
         xhr.send(formData);
     });
 
+    // Функция для отображения сообщений
     function showMessage(container, message, type) {
         container.classList.remove('hidden', 'success', 'error', 'warning');
         container.textContent = message;
@@ -81,6 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
         container.className = 'message-container hidden';
     }
 
+    // Функция для заполнения селекторов колонок
     function populateColumnSelectOptions(columns) {
         column1Select.innerHTML = "";
         column2Select.innerHTML = "";
@@ -99,14 +137,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Обработчик нажатия на кнопку анализа
     analyzeButton.addEventListener('click', async () => {
         hideMessage(uploadMessageContainer);
         hideMessage(analysisMessageContainer);
         resultsContainer.innerHTML = '';
+        chartContainer.innerHTML = '';
+        chartContainer.classList.add('hidden');
 
         const column1 = column1Select.value;
         const column2 = column2Select.value;
-        const analysisType = document.getElementById('test-type').value;
+        const analysisType = testTypeSelect.value;
 
         // Проверка наличия выбора обеих колонок
         if (!column1 || !column2) {
@@ -230,6 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return false;
     }
 
+    // Функция для отображения результатов анализа
     function displayFormattedResults(result) {
         resultsContainer.innerHTML = '';
 
