@@ -46,7 +46,7 @@
                     </select>
                 </div>
 
-                <!-- Дополнительные поля для К-С критерия -->
+                <!-- Дополнительные поля для Критерия Колмогорова-Смирнова -->
                 <div id="ks-fields" class="hidden">
                     <h3>Настройки для Критерия Колмогорова-Смирнова</h3>
                     
@@ -67,7 +67,7 @@
                     </div>
                 </div>
 
-                <!-- Дополнительные поля для Т-критерия Стьюдента для независимых выборок -->
+                <!-- Дополнительные поля для Т-критерия Стьюдента (независимые выборки) -->
                 <div id="t-independent-fields" class="hidden">
                     <h3>Настройки для Т-критерия Стьюдента (независимые выборки)</h3>
                     
@@ -76,7 +76,7 @@
                         <option value="">-- Выберите независимую переменную --</option>
                     </select>
                     <div class="explanation">
-                        <p><strong>Независимая переменная</strong> представляет набор количественных, непрерывных значений, например, возраст в основной и контрольной группе, содержание глюкозы в крови пациентов, принимавших препарат или плацебо.</p>
+                        <p><strong>Независимая переменная</strong> представляет набор количественных, непрерывных значений, например, возраст в основной и контрольной группе, содержание глюкозы в крови у пациентов, принимавших препарат или плацебо.</p>
                     </div>
 
                     <label for="t-indep-grouping-variable-select">Выберите группирующую переменную:</label>
@@ -88,7 +88,7 @@
                     </div>
                 </div>
 
-                <!-- Дополнительные поля для Т-критерия Стьюдента для зависимых выборок -->
+                <!-- Дополнительные поля для Т-критерия Стьюдента (зависимые выборки) -->
                 <div id="t-dependent-fields" class="hidden">
                     <h3>Настройки для Т-критерия Стьюдента (зависимые выборки)</h3>
                     
@@ -102,6 +102,48 @@
 
                     <label for="t-dep-variable2-select">Выберите вторую переменную:</label>
                     <select id="t-dep-variable2-select" name="t_dep_variable2" class="select-input" required>
+                        <option value="">-- Выберите вторую переменную --</option>
+                    </select>
+                    <div class="explanation">
+                        <p><strong>Вторая переменная</strong> - соответствующая переменная после воздействия, например, частота сердечных сокращений после приема препарата.</p>
+                    </div>
+                </div>
+
+                <!-- Дополнительные поля для U-критерия Манна-Уитни -->
+                <div id="u-fields" class="hidden">
+                    <h3>Настройки для U-критерия Манна-Уитни</h3>
+                    
+                    <label for="u-independent-variable-select">Выберите независимую переменную:</label>
+                    <select id="u-independent-variable-select" name="u_independent_variable" class="select-input" required>
+                        <option value="">-- Выберите независимую переменную --</option>
+                    </select>
+                    <div class="explanation">
+                        <p><strong>Независимая переменная</strong> представляет набор количественных, непрерывных значений, например, возраст в основной и контрольной группе, содержание глюкозы в крови у пациентов, принимавших препарат или плацебо.</p>
+                    </div>
+
+                    <label for="u-grouping-variable-select">Выберите группирующую переменную:</label>
+                    <select id="u-grouping-variable-select" name="u_grouping_variable" class="select-input" required>
+                        <option value="">-- Выберите группирующую переменную --</option>
+                    </select>
+                    <div class="explanation">
+                        <p><strong>Группирующая переменная</strong> - переменная, используемая для разбиения независимой переменной на группы, для данного критерия является бинарной переменной, например, пол, группа и т.д.</p>
+                    </div>
+                </div>
+
+                <!-- Дополнительные поля для Т-критерия Уилкоксона -->
+                <div id="wilcoxon-fields" class="hidden">
+                    <h3>Настройки для Т-критерия Уилкоксона</h3>
+                    
+                    <label for="wilcoxon-variable1-select">Выберите первую переменную:</label>
+                    <select id="wilcoxon-variable1-select" name="wilcoxon_variable1" class="select-input" required>
+                        <option value="">-- Выберите первую переменную --</option>
+                    </select>
+                    <div class="explanation">
+                        <p><strong>Первая переменная</strong> представляет набор количественных, непрерывных значений, например, частота сердечных сокращений до приема препарата.</p>
+                    </div>
+
+                    <label for="wilcoxon-variable2-select">Выберите вторую переменную:</label>
+                    <select id="wilcoxon-variable2-select" name="wilcoxon_variable2" class="select-input" required>
                         <option value="">-- Выберите вторую переменную --</option>
                     </select>
                     <div class="explanation">
