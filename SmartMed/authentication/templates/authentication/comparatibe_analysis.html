@@ -31,12 +31,83 @@
             <div id="upload-message-container" class="message-container hidden"></div>  <!-- Контейнер для сообщений загрузки -->
 
             <div id="column-selection" class="hidden">
-                <h2 class="subtitle">Выберите колонки для анализа</h2>
-                <label for="column1-select">Первая колонка:</label>
-                <select id="column1-select" name="column1" class="select-input" required></select>
+                <h2 class="subtitle">Выберите параметры для анализа</h2>
+                
+                <!-- Поля для выбора колонок по умолчанию -->
+                <div id="default-fields">
+                    <label for="column1-select">Первая колонка:</label>
+                    <select id="column1-select" name="column1" class="select-input" required>
+                        <option value="">-- Выберите колонку --</option>
+                    </select>
 
-                <label for="column2-select">Вторая колонка:</label>
-                <select id="column2-select" name="column2" class="select-input" required></select>
+                    <label for="column2-select">Вторая колонка:</label>
+                    <select id="column2-select" name="column2" class="select-input" required>
+                        <option value="">-- Выберите колонку --</option>
+                    </select>
+                </div>
+
+                <!-- Дополнительные поля для К-С критерия -->
+                <div id="ks-fields" class="hidden">
+                    <h3>Настройки для Критерия Колмогорова-Смирнова</h3>
+                    
+                    <label for="independent-variable-select">Выберите независимую переменную:</label>
+                    <select id="independent-variable-select" name="independent_variable" class="select-input" required>
+                        <option value="">-- Выберите независимую переменную --</option>
+                    </select>
+                    <div class="explanation">
+                        <p><strong>Независимая переменная</strong> представляет набор количественных, непрерывных значений, например, возраст пациента, уровень лейкоцитов и т.д.</p>
+                    </div>
+
+                    <label for="grouping-variable-select">Выберите группирующую переменную:</label>
+                    <select id="grouping-variable-select" name="grouping_variable" class="select-input" required>
+                        <option value="">-- Выберите группирующую переменную --</option>
+                    </select>
+                    <div class="explanation">
+                        <p><strong>Группирующая переменная</strong> - переменная, используемая для разбиения независимой переменной на группы, для данного критерия является бинарной переменной, например, пол, группа и т.д.</p>
+                    </div>
+                </div>
+
+                <!-- Дополнительные поля для Т-критерия Стьюдента для независимых выборок -->
+                <div id="t-independent-fields" class="hidden">
+                    <h3>Настройки для Т-критерия Стьюдента (независимые выборки)</h3>
+                    
+                    <label for="t-indep-independent-variable-select">Выберите независимую переменную:</label>
+                    <select id="t-indep-independent-variable-select" name="t_indep_independent_variable" class="select-input" required>
+                        <option value="">-- Выберите независимую переменную --</option>
+                    </select>
+                    <div class="explanation">
+                        <p><strong>Независимая переменная</strong> представляет набор количественных, непрерывных значений, например, возраст в основной и контрольной группе, содержание глюкозы в крови пациентов, принимавших препарат или плацебо.</p>
+                    </div>
+
+                    <label for="t-indep-grouping-variable-select">Выберите группирующую переменную:</label>
+                    <select id="t-indep-grouping-variable-select" name="t_indep_grouping_variable" class="select-input" required>
+                        <option value="">-- Выберите группирующую переменную --</option>
+                    </select>
+                    <div class="explanation">
+                        <p><strong>Группирующая переменная</strong> - переменная, используемая для разбиения независимой переменной на группы, для данного критерия является бинарной переменной, например, пол, группа и т.д.</p>
+                    </div>
+                </div>
+
+                <!-- Дополнительные поля для Т-критерия Стьюдента для зависимых выборок -->
+                <div id="t-dependent-fields" class="hidden">
+                    <h3>Настройки для Т-критерия Стьюдента (зависимые выборки)</h3>
+                    
+                    <label for="t-dep-variable1-select">Выберите первую переменную:</label>
+                    <select id="t-dep-variable1-select" name="t_dep_variable1" class="select-input" required>
+                        <option value="">-- Выберите первую переменную --</option>
+                    </select>
+                    <div class="explanation">
+                        <p><strong>Первая переменная</strong> представляет набор количественных, непрерывных значений, например, частота сердечных сокращений до приема препарата.</p>
+                    </div>
+
+                    <label for="t-dep-variable2-select">Выберите вторую переменную:</label>
+                    <select id="t-dep-variable2-select" name="t_dep_variable2" class="select-input" required>
+                        <option value="">-- Выберите вторую переменную --</option>
+                    </select>
+                    <div class="explanation">
+                        <p><strong>Вторая переменная</strong> - соответствующая переменная после воздействия, например, частота сердечных сокращений после приема препарата.</p>
+                    </div>
+                </div>
 
                 <label for="test-type" class="chart-label">
                     Выберите тип теста:
@@ -46,6 +117,7 @@
                     </div>
                 </label>
                 <select id="test-type" name="test_type" class="select-input" required>
+                    <option value="">-- Выберите тест --</option>
                     <option value="kolmogorov_smirnov">Критерий Колмогорова-Смирнова</option>
                     <option value="t_criterion_student_independent">Т-критерий Стьюдента (независимые выборки)</option>
                     <option value="t_criterion_student_dependent">Т-критерий Стьюдента (зависимые выборки)</option>
