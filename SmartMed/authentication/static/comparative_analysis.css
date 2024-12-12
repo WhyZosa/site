@@ -220,10 +220,6 @@ body {
     max-width: 400px; /* Убираем ограничение на 400px для большей гибкости */
 }
 
-.text-input {
-    /* Добавьте необходимые стили для .text-input, если требуется */
-}
-
 .btn-submit {
     padding: 10px 20px;
     border: none;
