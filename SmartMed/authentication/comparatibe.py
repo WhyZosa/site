@@ -10,7 +10,7 @@ def generate_test_kolmogorov_smirnov(df, independent_var, grouping_var):
     unique_groups = df[grouping_var].dropna().unique()
     if len(unique_groups) != 2:
         return {"error": f'Группирующая переменная "{grouping_var}" должна быть бинарной (содержать два уникальных значения).'}
-    
+
     group1 = df[df[grouping_var] == unique_groups[0]][independent_var].dropna()
     group2 = df[df[grouping_var] == unique_groups[1]][independent_var].dropna()
     
@@ -103,7 +103,7 @@ def generate_u_criterion_mann_whitney(df, column1, column2):
         unique_groups = df[column2].dropna().unique()
         if len(unique_groups) != 2:
             return {"error": f'Группирующая переменная "{column2}" должна быть бинарной (содержать два уникальных значения).'}
-        
+
         # Разделение данных на две группы
         group1 = df[df[column2] == unique_groups[0]][column1].dropna()
         group2 = df[df[column2] == unique_groups[1]][column1].dropna()
@@ -242,6 +242,7 @@ def generate_risk_relations(df, column1, column2):
         if not set(df[column1].dropna().unique()).issubset({0, 1}) or not set(df[column2].dropna().unique()).issubset({0, 1}):
             return {"error": "Обе колонки должны содержать только бинарные значения (0 и 1)."}
 
+        # Определение абсолютного риска в каждой группе
         risk_group1 = df[df[column1] == 1][column2].mean()
         risk_group0 = df[df[column1] == 0][column2].mean()
 
@@ -442,6 +443,69 @@ def process_json_comparative(input_json):
                 continue
 
             result = generate_sensitivity_specificity(df, column1, column2)
+            output[test_type] = result
+
+        elif test_type == 'risk_relations':
+            column1 = test.get('column1')
+            column2 = test.get('column2')
+            table_type = test.get('table_type')
+
+            if not column1 or not column2:
+                output[test_type] = {"error": "Необходимо указать фактор риска и исход для Отношения рисков (RR)." }
+                continue
+
+            if column1 == column2:
+                output[test_type] = {"error": "Нельзя выбирать одинаковые переменные для фактора риска и исхода."}
+                continue
+
+            if column1 not in df.columns or column2 not in df.columns:
+                output[test_type] = {"error": f'Указанные переменные "{column1}" и/или "{column2}" не найдены в данных.'}
+                continue
+
+            if not table_type:
+                output[test_type] = {"error": "Пожалуйста, выберите тип таблицы для Отношения рисков (RR)."}
+                continue
+
+            result = generate_risk_relations(df, column1, column2)
+            if "error" not in result:
+                # Добавляем информацию о таблице сопряженности или метриках, если необходимо
+                if table_type == "contingency":
+                    contingency_table = pd.crosstab(df[column1], df[column2])
+                    result["contingency_table"] = contingency_table.to_dict()
+                elif table_type == "metrics":
+                    # В данном случае, RR уже добавлен в результат
+                    pass
+            output[test_type] = result
+
+        elif test_type == 'odds_relations':
+            column1 = test.get('column1')
+            column2 = test.get('column2')
+            table_type = test.get('table_type')
+
+            if not column1 or not column2:
+                output[test_type] = {"error": "Необходимо указать фактор риска и исход для Отношения шансов (OR)." }
+                continue
+
+            if column1 == column2:
+                output[test_type] = {"error": "Нельзя выбирать одинаковые переменные для фактора риска и исхода."}
+                continue
+
+            if column1 not in df.columns or column2 not in df.columns:
+                output[test_type] = {"error": f'Указанные переменные "{column1}" и/или "{column2}" не найдены в данных.'}
+                continue
+
+            if not table_type:
+                output[test_type] = {"error": "Пожалуйста, выберите тип таблицы для Отношения шансов (OR)."}
+                continue
+
+            result = generate_odds_relations(df, column1, column2)
+            if "error" not in result:
+                if table_type == "contingency":
+                    contingency_table = pd.crosstab(df[column1], df[column2])
+                    result["contingency_table"] = contingency_table.to_dict()
+                elif table_type == "metrics":
+                    # В данном случае, OR уже добавлен в результат
+                    pass
             output[test_type] = result
 
         else:

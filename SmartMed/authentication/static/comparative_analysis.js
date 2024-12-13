@@ -19,6 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const wilcoxonFields = document.getElementById('wilcoxon-fields'); // Добавлен блок для Wilcoxon
     const chi2Fields = document.getElementById('chi2-fields'); // Добавлен блок для Chi2
     const sensitivitySpecificityFields = document.getElementById('sensitivity_specificity-fields'); // Добавлен блок для Чувствительности и Специфичности
+    const riskRelationsFields = document.getElementById('risk-relations-fields'); // Добавлен блок для Отношения рисков (RR)
+    const oddsRelationsFields = document.getElementById('odds-relations-fields'); // Добавлен блок для Отношения шансов (OR)
     const defaultFields = document.getElementById('default-fields');
     const independentVariableSelect = document.getElementById('independent-variable-select');
     const groupingVariableSelect = document.getElementById('grouping-variable-select');
@@ -32,6 +34,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const chi2Variable2Select = document.getElementById('chi2-variable2-select');
     const sensitivityVariable1Select = document.getElementById('sensitivity-variable1-select');
     const sensitivityVariable2Select = document.getElementById('sensitivity-variable2-select');
+    const riskRelationsVariable1Select = document.getElementById('risk-relations-variable1-select');
+    const riskRelationsVariable2Select = document.getElementById('risk-relations-variable2-select');
+    const riskRelationsTableSelect = document.getElementById('risk-relations-table-select');
+    const oddsRelationsVariable1Select = document.getElementById('odds-relations-variable1-select');
+    const oddsRelationsVariable2Select = document.getElementById('odds-relations-variable2-select');
+    const oddsRelationsTableSelect = document.getElementById('odds-relations-table-select');
 
     let columns = [];
 
@@ -52,7 +60,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const parameterExplanations = {
         'dof': 'Степени свободы (Dof): количество независимых элементов, которые могут свободно изменяться в данных.',
         'expected': 'Ожидаемые значения (Expected): значения, ожидаемые при условии независимости переменных.',
-        'contingency_table': 'Контингентная таблица (Contingency Table): таблица, показывающая распределение частот по категориям двух переменных.'
+        'contingency_table': 'Контингентная таблица (Contingency Table): таблица, показывающая распределение частот по категориям двух переменных.',
+        'risk_ratio': 'Отношение рисков (RR): отношение вероятности события в группе с фактором риска к вероятности события в группе без фактора риска.',
+        'odds_ratio': 'Отношение шансов (OR): отношение шансов события в группе с фактором риска к шансовам события в группе без фактора риска.'
     };
 
     // Функция для обновления текста тултипа
@@ -87,6 +97,8 @@ document.addEventListener('DOMContentLoaded', () => {
         wilcoxonFields.classList.add('hidden');
         chi2Fields.classList.add('hidden');
         sensitivitySpecificityFields.classList.add('hidden');
+        riskRelationsFields.classList.add('hidden');
+        oddsRelationsFields.classList.add('hidden');
         defaultFields.classList.add('hidden');
 
         // Отображаем соответствующие поля
@@ -111,6 +123,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
             case 'sensitivity_specificity': // Добавляем отображение для Чувствительности и Специфичности
                 sensitivitySpecificityFields.classList.remove('hidden');
+                break;
+            case 'risk_relations': // Добавляем отображение для Отношения рисков (RR)
+                riskRelationsFields.classList.remove('hidden');
+                break;
+            case 'odds_relations': // Добавляем отображение для Отношения шансов (OR)
+                oddsRelationsFields.classList.remove('hidden');
                 break;
             default:
                 defaultFields.classList.remove('hidden');
@@ -161,10 +179,32 @@ document.addEventListener('DOMContentLoaded', () => {
         populateSelect(sensitivityVariable2Select, columns, "Выберите исход");
     }
 
+    // Функция для заполнения селектов Отношения рисков (RR)
+    function populateRiskRelationsVariableSelects() {
+        populateSelect(riskRelationsVariable1Select, columns, "Выберите фактор риска");
+        populateSelect(riskRelationsVariable2Select, columns, "Выберите исход");
+    }
+
+    // Функция для заполнения селектов Отношения шансов (OR)
+    function populateOddsRelationsVariableSelects() {
+        populateSelect(oddsRelationsVariable1Select, columns, "Выберите фактор риска");
+        populateSelect(oddsRelationsVariable2Select, columns, "Выберите исход");
+    }
+
     // Функция для заполнения селектов Уилкоксона
     function populateWilcoxonVariableSelects() {
         populateSelect(document.getElementById('wilcoxon-variable1-select'), columns, "Выберите первую переменную");
         populateSelect(document.getElementById('wilcoxon-variable2-select'), columns, "Выберите вторую переменную");
+    }
+
+    // Функция для заполнения селектов Отношения рисков (RR) таблицы
+    function populateRiskRelationsTableSelect() {
+        populateSelect(riskRelationsTableSelect, ["contingency", "metrics"], "Выберите тип таблицы");
+    }
+
+    // Функция для заполнения селектов Отношения шансов (OR) таблицы
+    function populateOddsRelationsTableSelect() {
+        populateSelect(oddsRelationsTableSelect, ["contingency", "metrics"], "Выберите тип таблицы");
     }
 
     // Универсальная функция для заполнения селектов
@@ -190,6 +230,10 @@ document.addEventListener('DOMContentLoaded', () => {
         populateChi2VariableSelects(); // Добавлено
         populateWilcoxonVariableSelects();
         populateSensitivitySpecificityVariableSelects(); // Добавлено
+        populateRiskRelationsVariableSelects(); // Добавлено
+        populateOddsRelationsVariableSelects(); // Добавлено
+        populateRiskRelationsTableSelect(); // Добавлено
+        populateOddsRelationsTableSelect(); // Добавлено
     }
 
     // Обработчик отправки формы загрузки файла
@@ -348,8 +392,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
 
             case 't_criterion_wilcoxon':
-                const wilcoxonVariable1 = document.getElementById('wilcoxon-variable1-select').value;
-                const wilcoxonVariable2 = document.getElementById('wilcoxon-variable2-select').value;
+                const wilcoxonVariable1 = wilcoxonVariable1Select.value;
+                const wilcoxonVariable2 = wilcoxonVariable2Select.value;
 
                 if (!wilcoxonVariable1 || !wilcoxonVariable2) {
                     showMessage(analysisMessageContainer, 'Ошибка: Пожалуйста, выберите обе переменные для Т-критерия Уилкоксона.', 'error');
@@ -402,6 +446,62 @@ document.addEventListener('DOMContentLoaded', () => {
                     type: analysisType,
                     column1: sensitivityVariable1,
                     column2: sensitivityVariable2
+                });
+                break;
+
+            case 'risk_relations':
+                const riskVariable1 = riskRelationsVariable1Select.value;
+                const riskVariable2 = riskRelationsVariable2Select.value;
+                const riskTableType = riskRelationsTableSelect.value;
+
+                if (!riskVariable1 || !riskVariable2) {
+                    showMessage(analysisMessageContainer, 'Ошибка: Пожалуйста, выберите фактор риска и исход для Отношения рисков (RR).', 'error');
+                    return;
+                }
+
+                if (riskVariable1 === riskVariable2) {
+                    showMessage(analysisMessageContainer, 'Ошибка: Нельзя выбирать одинаковые переменные для фактора риска и исхода.', 'error');
+                    return;
+                }
+
+                if (!riskTableType) {
+                    showMessage(analysisMessageContainer, 'Ошибка: Пожалуйста, выберите тип таблицы для Отношения рисков (RR).', 'error');
+                    return;
+                }
+
+                analysisData.tests.push({
+                    type: analysisType,
+                    column1: riskVariable1,
+                    column2: riskVariable2,
+                    table_type: riskTableType
+                });
+                break;
+
+            case 'odds_relations':
+                const oddsVariable1 = oddsRelationsVariable1Select.value;
+                const oddsVariable2 = oddsRelationsVariable2Select.value;
+                const oddsTableType = oddsRelationsTableSelect.value;
+
+                if (!oddsVariable1 || !oddsVariable2) {
+                    showMessage(analysisMessageContainer, 'Ошибка: Пожалуйста, выберите фактор риска и исход для Отношения шансов (OR).', 'error');
+                    return;
+                }
+
+                if (oddsVariable1 === oddsVariable2) {
+                    showMessage(analysisMessageContainer, 'Ошибка: Нельзя выбирать одинаковые переменные для фактора риска и исхода.', 'error');
+                    return;
+                }
+
+                if (!oddsTableType) {
+                    showMessage(analysisMessageContainer, 'Ошибка: Пожалуйста, выберите тип таблицы для Отношения шансов (OR).', 'error');
+                    return;
+                }
+
+                analysisData.tests.push({
+                    type: analysisType,
+                    column1: oddsVariable1,
+                    column2: oddsVariable2,
+                    table_type: oddsTableType
                 });
                 break;
 
@@ -601,7 +701,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const explanation = document.createElement('div');
         explanation.classList.add('description-container');
 
-        let p1, p2;
+        let p1, p2, p3;
 
         switch(testName) {
             case 'kolmogorov_smirnov':
@@ -660,6 +760,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 p2.textContent = `Специфичность (Specificity) показывает, насколько тест способен правильно идентифицировать отрицательные случаи. Высокая специфичность означает, что тест редко ошибается в сторону ложноположительных результатов.`;
                 break;
 
+            case 'risk_relations':
+                p1 = document.createElement('p');
+                p1.textContent = `Относительный риск (RR) используется для сравнения риска заболеваемости в двух разных группах пациентов.`;
+
+                p2 = document.createElement('p');
+                p2.textContent = `RR используется для сравнения вероятности исхода в зависимости от наличия фактора риска.`;
+
+                p3 = document.createElement('p');
+                p3.textContent = `Если RR > 1, фактор повышает частоту исходов (прямая связь). Если RR < 1, вероятность исхода снижается при воздействии фактора (обратная связь). Если RR = 1, фактор не влияет на вероятность исхода.`;
+                break;
+
+            case 'odds_relations':
+                p1 = document.createElement('p');
+                p1.textContent = `Отношение шансов (OR) оценивает вероятность события в одной группе по сравнению с другой.`;
+
+                p2 = document.createElement('p');
+                p2.textContent = `Если OR > 1, событие более вероятно в группе с фактором риска. Если OR < 1, событие менее вероятно в группе с фактором риска. Если OR = 1, вероятность события одинакова в обеих группах.`;
+                break;
+
             // Добавьте пояснения для других тестов по необходимости
 
             default:
@@ -668,6 +787,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         explanation.appendChild(p1);
         explanation.appendChild(p2);
+        if (p3) explanation.appendChild(p3);
         resultsContainer.lastChild.appendChild(explanation);
     }
 
@@ -724,6 +844,28 @@ document.addEventListener('DOMContentLoaded', () => {
                     sensitivityVariable2Select.classList.add('input-error');
                 }
                 break;
+            case 'risk_relations':
+                if (errorMessage.includes('фактор риска')) {
+                    riskRelationsVariable1Select.classList.add('input-error');
+                }
+                if (errorMessage.includes('исход')) {
+                    riskRelationsVariable2Select.classList.add('input-error');
+                }
+                if (errorMessage.includes('тип таблицы')) {
+                    riskRelationsTableSelect.classList.add('input-error');
+                }
+                break;
+            case 'odds_relations':
+                if (errorMessage.includes('фактор риска')) {
+                    oddsRelationsVariable1Select.classList.add('input-error');
+                }
+                if (errorMessage.includes('исход')) {
+                    oddsRelationsVariable2Select.classList.add('input-error');
+                }
+                if (errorMessage.includes('тип таблицы')) {
+                    oddsRelationsTableSelect.classList.add('input-error');
+                }
+                break;
             // Добавьте обработку для других тестов при необходимости
             default:
                 if (errorMessage.includes('колонки') || errorMessage.includes('переменные')) {
@@ -749,6 +891,12 @@ document.addEventListener('DOMContentLoaded', () => {
         chi2Variable2Select.classList.remove('input-error');
         sensitivityVariable1Select.classList.remove('input-error');
         sensitivityVariable2Select.classList.remove('input-error');
+        riskRelationsVariable1Select.classList.remove('input-error');
+        riskRelationsVariable2Select.classList.remove('input-error');
+        riskRelationsTableSelect.classList.remove('input-error');
+        oddsRelationsVariable1Select.classList.remove('input-error');
+        oddsRelationsVariable2Select.classList.remove('input-error');
+        oddsRelationsTableSelect.classList.remove('input-error');
     }
 
     // Функция для отображения сообщений об ошибках
@@ -760,7 +908,8 @@ document.addEventListener('DOMContentLoaded', () => {
             { regex: /nan/i, message: 'Некоторые значения в результате анализа равны NaN. Проверьте данные.' },
             { regex: /одинаковые колонки/i, message: 'Нельзя выбирать одинаковые колонки для независимой и группирующей переменной. Пожалуйста, выберите разные колонки.' },
             { regex: /фактор риска/i, message: 'Проверьте выбранный фактор риска. Убедитесь, что он бинарный и правильно выбран.' },
-            { regex: /исход/i, message: 'Проверьте выбранный исход. Убедитесь, что он бинарный и правильно выбран.' }
+            { regex: /исход/i, message: 'Проверьте выбранный исход. Убедитесь, что он бинарный и правильно выбран.' },
+            { regex: /тип таблицы/i, message: 'Пожалуйста, выберите корректный тип таблицы (Таблица сопряженности или Таблица метрик).' }
         ];
 
         for (const pattern of patterns) {

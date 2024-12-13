@@ -193,6 +193,70 @@
                     </div>
                 </div>
 
+                <!-- Дополнительные поля для Отношения рисков (RR) -->
+                <div id="risk-relations-fields" class="hidden">
+                    <h3>Настройки для Отношения рисков (RR)</h3>
+                    
+                    <label for="risk-relations-variable1-select">Выберите фактор риска:</label>
+                    <select id="risk-relations-variable1-select" name="risk_relations_variable1" class="select-input" required>
+                        <option value="">-- Выберите фактор риска --</option>
+                    </select>
+                    <div class="explanation">
+                        <p><strong>Фактор риска</strong> - переменная, представляющая наличие или отсутствие риска, например, наличие заболевания (1 - есть, 0 - нет).</p>
+                    </div>
+
+                    <label for="risk-relations-variable2-select">Выберите исход:</label>
+                    <select id="risk-relations-variable2-select" name="risk_relations_variable2" class="select-input" required>
+                        <option value="">-- Выберите исход --</option>
+                    </select>
+                    <div class="explanation">
+                        <p><strong>Исход</strong> - событие, которое вы анализируете, например, развитие заболевания (1 - развилось, 0 - не развилось).</p>
+                    </div>
+
+                    <label for="risk-relations-table-select">Выберите тип таблицы:</label>
+                    <select id="risk-relations-table-select" name="risk_relations_table_type" class="select-input" required>
+                        <option value="">-- Выберите тип таблицы --</option>
+                        <option value="contingency">Таблица сопряженности</option>
+                        <option value="metrics">Таблица метрик</option>
+                    </select>
+                    <div class="explanation">
+                        <p><strong>Таблица сопряженности</strong> - таблица, показывающая распределение событий по группам с и без фактора риска.</p>
+                        <p><strong>Таблица метрик</strong> - таблица, отображающая рассчитанные метрики, такие как RR, доверительные интервалы и p-значение.</p>
+                    </div>
+                </div>
+
+                <!-- Дополнительные поля для Отношения шансов (OR) -->
+                <div id="odds-relations-fields" class="hidden">
+                    <h3>Настройки для Отношения шансов (OR)</h3>
+                    
+                    <label for="odds-relations-variable1-select">Выберите фактор риска:</label>
+                    <select id="odds-relations-variable1-select" name="odds_relations_variable1" class="select-input" required>
+                        <option value="">-- Выберите фактор риска --</option>
+                    </select>
+                    <div class="explanation">
+                        <p><strong>Фактор риска</strong> - переменная, представляющая наличие или отсутствие риска, например, наличие заболевания (1 - есть, 0 - нет).</p>
+                    </div>
+
+                    <label for="odds-relations-variable2-select">Выберите исход:</label>
+                    <select id="odds-relations-variable2-select" name="odds_relations_variable2" class="select-input" required>
+                        <option value="">-- Выберите исход --</option>
+                    </select>
+                    <div class="explanation">
+                        <p><strong>Исход</strong> - событие, которое вы анализируете, например, развитие заболевания (1 - развилось, 0 - не развилось).</p>
+                    </div>
+
+                    <label for="odds-relations-table-select">Выберите тип таблицы:</label>
+                    <select id="odds-relations-table-select" name="odds_relations_table_type" class="select-input" required>
+                        <option value="">-- Выберите тип таблицы --</option>
+                        <option value="contingency">Таблица сопряженности</option>
+                        <option value="metrics">Таблица метрик</option>
+                    </select>
+                    <div class="explanation">
+                        <p><strong>Таблица сопряженности</strong> - таблица, показывающая распределение событий по группам с и без фактора риска.</p>
+                        <p><strong>Таблица метрик</strong> - таблица, отображающая рассчитанные метрики, такие как OR, доверительные интервалы и p-значение.</p>
+                    </div>
+                </div>
+
                 <label for="test-type" class="chart-label">
                     Выберите тип теста:
                     <div class="tooltip" tabindex="0">
