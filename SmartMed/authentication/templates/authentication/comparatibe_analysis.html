@@ -151,6 +151,27 @@
                     </div>
                 </div>
 
+                <!-- Дополнительные поля для Критерия Хи-квадрат Пирсона -->
+                <div id="chi2-fields" class="hidden">
+                    <h3>Настройки для Критерия Хи-квадрат Пирсона</h3>
+                    
+                    <label for="chi2-variable1-select">Выберите первую группирующую переменную:</label>
+                    <select id="chi2-variable1-select" name="chi2_variable1" class="select-input" required>
+                        <option value="">-- Выберите первую переменную --</option>
+                    </select>
+                    <div class="explanation">
+                        <p><strong>Первая группирующая переменная</strong> должна быть бинарной, например, пол (мужской/женский), наличие/отсутствие заболевания.</p>
+                    </div>
+
+                    <label for="chi2-variable2-select">Выберите вторую группирующую переменную:</label>
+                    <select id="chi2-variable2-select" name="chi2_variable2" class="select-input" required>
+                        <option value="">-- Выберите вторую переменную --</option>
+                    </select>
+                    <div class="explanation">
+                        <p><strong>Вторая группирующая переменная</strong> должна быть бинарной, например, наличие/отсутствие симптомов, лечение/без лечения.</p>
+                    </div>
+                </div>
+
                 <label for="test-type" class="chart-label">
                     Выберите тип теста:
                     <div class="tooltip" tabindex="0">

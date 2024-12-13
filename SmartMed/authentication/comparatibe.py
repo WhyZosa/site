@@ -1,3 +1,5 @@
+# authentication/comparatibe.py
+
 import pandas as pd
 import numpy as np
 from scipy import stats
@@ -21,7 +23,9 @@ def generate_test_kolmogorov_smirnov(df, independent_var, grouping_var):
         stat, p_value = stats.ks_2samp(group1, group2)
         result = {
             "statistic": round(stat, 5),
-            "p_value": round(p_value, 5)
+            "p_value": round(p_value, 5),
+            "contingency_table": "Не применяется для К-С критерия.",
+            "expected": "Не применяется для К-С критерия."
         }
         # Добавление интерпретации
         if p_value < 0.05:
@@ -40,7 +44,7 @@ def generate_t_criterion_student_independent(df, column1, column2):
         unique_groups = df[column2].dropna().unique()
         if len(unique_groups) != 2:
             return {"error": f'Группирующая переменная "{column2}" должна быть бинарной (содержать два уникальных значения).'}
-        
+
         group1 = df[df[column2] == unique_groups[0]][column1].dropna()
         group2 = df[df[column2] == unique_groups[1]][column1].dropna()
 
@@ -84,14 +88,6 @@ def generate_t_criterion_student_dependent(df, column1, column2):
         return {"error": f"Ошибка при выполнении Т-критерия Стьюдента (зависимые выборки): {str(e)}"}
 
 def generate_u_criterion_mann_whitney(df, column1, column2):
-    """
-    Выполняет U-критерий Манна-Уитни с дополнительной обработкой ошибок.
-    
-    :param df: DataFrame с данными.
-    :param column1: Название первой колонки (независимая переменная).
-    :param column2: Название второй колонки (группирующая переменная, бинарная).
-    :return: Словарь с результатами теста или сообщением об ошибке.
-    """
     try:
         # Проверка наличия колонок
         if column1 not in df.columns or column2 not in df.columns:
@@ -134,14 +130,6 @@ def generate_u_criterion_mann_whitney(df, column1, column2):
         return {"error": f"Ошибка при выполнении U-критерия Манна-Уитни: {str(e)}"}
 
 def generate_t_criterion_wilcoxon(df, column1, column2):
-    """
-    Выполняет Т-критерий Уилкоксона для зависимых выборок.
-
-    :param df: DataFrame с данными.
-    :param column1: Название первой колонки (первая зависимая переменная).
-    :param column2: Название второй колонки (вторая зависимая переменная).
-    :return: Словарь с результатами теста или сообщением об ошибке.
-    """
     try:
         if column1 not in df.columns or column2 not in df.columns:
             return {"error": f'Одна из переменных "{column1}" или "{column2}" не найдена в данных.'}
@@ -176,13 +164,20 @@ def generate_chi2_pearson(df, column1, column2):
         if column1 not in df.columns or column2 not in df.columns:
             return {"error": f'Одна из колонок "{column1}" или "{column2}" не найдена в данных.'}
 
+        # Проверка, что обе переменные бинарные
+        unique1 = df[column1].dropna().unique()
+        unique2 = df[column2].dropna().unique()
+        if len(unique1) != 2 or len(unique2) != 2:
+            return {"error": 'Обе группирующие переменные должны быть бинарными (содержать два уникальных значения).'}
+
         contingency_table = pd.crosstab(df[column1], df[column2])
         stat, p_value, dof, expected = stats.chi2_contingency(contingency_table)
         result = {
             "statistic": round(stat, 5),
             "p_value": round(p_value, 5),
             "dof": dof,
-            "expected": expected.tolist()
+            "expected": expected.tolist(),
+            "contingency_table": contingency_table.to_dict()
         }
         # Добавление интерпретации
         if p_value < 0.05:
@@ -300,44 +295,6 @@ def generate_odds_relations(df, column1, column2):
     except Exception as e:
         return {"error": f"Ошибка при расчёте отношения шансов: {str(e)}"}
 
-def process_t_criterion_wilcoxon(df, column1, column2):
-    """
-    Выполняет Т-критерий Уилкоксона для зависимых выборок.
-
-    :param df: DataFrame с данными.
-    :param column1: Название первой колонки (первая зависимая переменная).
-    :param column2: Название второй колонки (вторая зависимая переменная).
-    :return: Словарь с результатами теста или сообщением об ошибке.
-    """
-    try:
-        if column1 not in df.columns or column2 not in df.columns:
-            return {"error": f'Одна из переменных "{column1}" или "{column2}" не найдена в данных.'}
-
-        if not pd.api.types.is_numeric_dtype(df[column1]) or not pd.api.types.is_numeric_dtype(df[column2]):
-            return {"error": f'Обе переменные "{column1}" и "{column2}" должны быть числовыми.'}
-
-        # Проверка на одинаковые переменные
-        if column1 == column2:
-            return {"error": "Переменные для сравнения должны быть разными."}
-
-        # Проверка на достаточное количество наблюдений
-        if df[[column1, column2]].dropna().shape[0] < 1:
-            return {"error": "Недостаточно данных для выполнения Т-критерия Уилкоксона."}
-
-        stat, p_value = stats.wilcoxon(df[column1].dropna(), df[column2].dropna())
-        result = {
-            "statistic": round(stat, 5),
-            "p_value": round(p_value, 5)
-        }
-        # Добавление интерпретации
-        if p_value < 0.05:
-            result["interpretation"] = "Нулевая гипотеза отвергается, принимается альтернативная, различия обладают статистической значимостью и носят системный характер."
-        else:
-            result["interpretation"] = "Нулевая гипотеза принимается, различия не являются статистически значимыми и носят случайный характер."
-        return result
-    except Exception as e:
-        return {"error": f"Ошибка при выполнении Т-критерия Уилкоксона: {str(e)}"}
-
 def process_missing_data(df, method):
     if method == 'drop':
         return df.dropna()
@@ -444,6 +401,21 @@ def process_json_comparative(input_json):
                 continue
 
             result = generate_t_criterion_wilcoxon(df, column1, column2)
+            output[test_type] = result
+
+        elif test_type == 'chi2_pearson':
+            column1 = test.get('column1')
+            column2 = test.get('column2')
+
+            if not column1 or not column2:
+                output[test_type] = {"error": "Необходимо указать обе группирующие переменные для Критерия Хи-квадрат Пирсона."}
+                continue
+
+            if column1 not in df.columns or column2 not in df.columns:
+                output[test_type] = {"error": f'Указанные переменные "{column1}" и/или "{column2}" не найдены в данных.'}
+                continue
+
+            result = generate_chi2_pearson(df, column1, column2)
             output[test_type] = result
 
         else:

@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tDependentFields = document.getElementById('t-dependent-fields');
     const uFields = document.getElementById('u-fields'); 
     const wilcoxonFields = document.getElementById('wilcoxon-fields'); // Добавлен блок для Wilcoxon
+    const chi2Fields = document.getElementById('chi2-fields'); // Добавлен блок для Chi2
     const defaultFields = document.getElementById('default-fields');
     const independentVariableSelect = document.getElementById('independent-variable-select');
     const groupingVariableSelect = document.getElementById('grouping-variable-select');
@@ -26,6 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const tDepVariable2Select = document.getElementById('t-dep-variable2-select');
     const uIndependentVariableSelect = document.getElementById('u-independent-variable-select');
     const uGroupingVariableSelect = document.getElementById('u-grouping-variable-select');
+    const chi2Variable1Select = document.getElementById('chi2-variable1-select');
+    const chi2Variable2Select = document.getElementById('chi2-variable2-select');
 
     let columns = [];
 
@@ -42,18 +45,29 @@ document.addEventListener('DOMContentLoaded', () => {
         odds_relations: "Отношение шансов (OR) оценивает вероятность события в одной группе по сравнению с другой."
     };
 
+    // Описания параметров для отображения в результирующей таблице
+    const parameterExplanations = {
+        'dof': 'Степени свободы (Dof): количество независимых элементов, которые могут свободно изменяться в данных.',
+        'expected': 'Ожидаемые значения (Expected): значения, ожидаемые при условии независимости переменных.',
+        'contingency_table': 'Контингентная таблица (Contingency Table): таблица, показывающая распределение частот по категориям двух переменных.'
+    };
+
     // Функция для обновления текста тултипа
     function updateTestTooltip() {
         const selectedTest = testTypeSelect.value;
         testTooltip.textContent = testDescriptions[selectedTest] || "Выберите тип теста для анализа данных.";
     }
 
+    // Инициализация тултипа при загрузке страницы
+    updateTestTooltip();
+
+    // Обработчик изменения типа теста
     testTypeSelect.addEventListener('change', () => {
         handleTestTypeChange(testTypeSelect.value);
         updateTestTooltip();
     });
-    updateTestTooltip();
 
+    // Функция для обработки изменения типа теста
     function handleTestTypeChange(testType) {
         const hasResults = !resultsContainer.classList.contains('hidden') && resultsContainer.innerHTML.trim() !== '';
         const hasCharts = !chartContainer.classList.contains('hidden') && chartContainer.innerHTML.trim() !== '';
@@ -62,13 +76,16 @@ document.addEventListener('DOMContentLoaded', () => {
             clearAnalysisResults();
         }
 
+        // Скрываем все поля
         ksFields.classList.add('hidden');
         tIndependentFields.classList.add('hidden');
         tDependentFields.classList.add('hidden');
         uFields.classList.add('hidden');
         wilcoxonFields.classList.add('hidden');
+        chi2Fields.classList.add('hidden');
         defaultFields.classList.add('hidden');
 
+        // Отображаем соответствующие поля
         switch(testType) {
             case 'kolmogorov_smirnov':
                 ksFields.classList.remove('hidden');
@@ -85,11 +102,15 @@ document.addEventListener('DOMContentLoaded', () => {
             case 't_criterion_wilcoxon': // Добавляем отображение для Wilcoxon
                 wilcoxonFields.classList.remove('hidden');
                 break;
+            case 'chi2_pearson': // Добавляем отображение для Chi2
+                chi2Fields.classList.remove('hidden');
+                break;
             default:
                 defaultFields.classList.remove('hidden');
         }
     }
 
+    // Функция для очистки результатов анализа
     function clearAnalysisResults() {
         hideMessage(analysisMessageContainer);
         resultsContainer.innerHTML = '';
@@ -97,121 +118,73 @@ document.addEventListener('DOMContentLoaded', () => {
         chartContainer.innerHTML = '';
         chartContainer.classList.add('hidden');
 
-        independentVariableSelect.classList.remove('input-error');
-        groupingVariableSelect.classList.remove('input-error');
-        column1Select.classList.remove('input-error');
-        column2Select.classList.remove('input-error');
-        tIndepIndependentVariableSelect.classList.remove('input-error');
-        tIndepGroupingVariableSelect.classList.remove('input-error');
-        tDepVariable1Select.classList.remove('input-error');
-        tDepVariable2Select.classList.remove('input-error');
-        uIndependentVariableSelect.classList.remove('input-error');
-        uGroupingVariableSelect.classList.remove('input-error');
+        // Удаление выделения ошибок
+        removeAllInputErrors();
     }
 
+    // Функции для заполнения селектов
     function populateKsVariableSelects() {
-        independentVariableSelect.innerHTML = "<option value=''>-- Выберите независимую переменную --</option>";
-        groupingVariableSelect.innerHTML = "<option value=''>-- Выберите группирующую переменную --</option>";
-
-        columns.forEach(column => {
-            const optionIndependent = document.createElement("option");
-            optionIndependent.value = column;
-            optionIndependent.textContent = column;
-            independentVariableSelect.appendChild(optionIndependent);
-
-            const optionGrouping = document.createElement("option");
-            optionGrouping.value = column;
-            optionGrouping.textContent = column;
-            groupingVariableSelect.appendChild(optionGrouping);
-        });
+        populateSelect(independentVariableSelect, columns, "Выберите независимую переменную");
+        populateSelect(groupingVariableSelect, columns, "Выберите группирующую переменную");
     }
 
     function populateTIndepVariableSelects() {
-        tIndepIndependentVariableSelect.innerHTML = "<option value=''>-- Выберите независимую переменную --</option>";
-        tIndepGroupingVariableSelect.innerHTML = "<option value=''>-- Выберите группирующую переменную --</option>";
-
-        columns.forEach(column => {
-            const optionIndependent = document.createElement("option");
-            optionIndependent.value = column;
-            optionIndependent.textContent = column;
-            tIndepIndependentVariableSelect.appendChild(optionIndependent);
-
-            const optionGrouping = document.createElement("option");
-            optionGrouping.value = column;
-            optionGrouping.textContent = column;
-            tIndepGroupingVariableSelect.appendChild(optionGrouping);
-        });
+        populateSelect(tIndepIndependentVariableSelect, columns, "Выберите независимую переменную");
+        populateSelect(tIndepGroupingVariableSelect, columns, "Выберите группирующую переменную");
     }
 
     function populateTDepVariableSelects() {
-        tDepVariable1Select.innerHTML = "<option value=''>-- Выберите первую переменную --</option>";
-        tDepVariable2Select.innerHTML = "<option value=''>-- Выберите вторую переменную --</option>";
-
-        columns.forEach(column => {
-            const option1 = document.createElement("option");
-            option1.value = column;
-            option1.textContent = column;
-            tDepVariable1Select.appendChild(option1);
-
-            const option2 = document.createElement("option");
-            option2.value = column;
-            option2.textContent = column;
-            tDepVariable2Select.appendChild(option2);
-        });
+        populateSelect(tDepVariable1Select, columns, "Выберите первую переменную");
+        populateSelect(tDepVariable2Select, columns, "Выберите вторую переменную");
     }
 
     function populateUVariableSelects() {
-        uIndependentVariableSelect.innerHTML = "<option value=''>-- Выберите независимую переменную --</option>";
-        uGroupingVariableSelect.innerHTML = "<option value=''>-- Выберите группирующую переменную --</option>";
+        populateSelect(uIndependentVariableSelect, columns, "Выберите независимую переменную");
+        populateSelect(uGroupingVariableSelect, columns, "Выберите группирующую переменную");
+    }
 
-        columns.forEach(column => {
-            const optionIndependent = document.createElement("option");
-            optionIndependent.value = column;
-            optionIndependent.textContent = column;
-            uIndependentVariableSelect.appendChild(optionIndependent);
-
-            const optionGrouping = document.createElement("option");
-            optionGrouping.value = column;
-            optionGrouping.textContent = column;
-            uGroupingVariableSelect.appendChild(optionGrouping);
-        });
+    function populateChi2VariableSelects() {
+        populateSelect(chi2Variable1Select, columns, "Выберите первую переменную");
+        populateSelect(chi2Variable2Select, columns, "Выберите вторую переменную");
     }
 
     // Функция для заполнения селектов Уилкоксона
     function populateWilcoxonVariableSelects() {
-        const wilcoxonVariable1Select = document.getElementById('wilcoxon-variable1-select');
-        const wilcoxonVariable2Select = document.getElementById('wilcoxon-variable2-select');
+        populateSelect(document.getElementById('wilcoxon-variable1-select'), columns, "Выберите первую переменную");
+        populateSelect(document.getElementById('wilcoxon-variable2-select'), columns, "Выберите вторую переменную");
+    }
 
-        wilcoxonVariable1Select.innerHTML = "<option value=''>-- Выберите первую переменную --</option>";
-        wilcoxonVariable2Select.innerHTML = "<option value=''>-- Выберите вторую переменную --</option>";
-
-        columns.forEach(column => {
-            const option1 = document.createElement("option");
-            option1.value = column;
-            option1.textContent = column;
-            wilcoxonVariable1Select.appendChild(option1);
-
-            const option2 = document.createElement("option");
-            option2.value = column;
-            option2.textContent = column;
-            wilcoxonVariable2Select.appendChild(option2);
+    // Универсальная функция для заполнения селектов
+    function populateSelect(selectElement, options, placeholder) {
+        selectElement.innerHTML = `<option value="">-- ${placeholder} --</option>`;
+        options.forEach(option => {
+            const opt = document.createElement("option");
+            opt.value = option;
+            opt.textContent = option;
+            selectElement.appendChild(opt);
         });
     }
 
+    // Функция для заполнения всех селектов
+    function populateAllVariableSelects() {
+        populateSelect(column1Select, columns, "Выберите колонку");
+        populateSelect(column2Select, columns, "Выберите колонку");
+
+        populateKsVariableSelects();
+        populateTIndepVariableSelects();
+        populateTDepVariableSelects();
+        populateUVariableSelects();
+        populateChi2VariableSelects(); // Добавлено
+        populateWilcoxonVariableSelects();
+    }
+
+    // Обработчик отправки формы загрузки файла
     uploadForm.addEventListener('submit', async (event) => {
         event.preventDefault();
 
         hideMessage(uploadMessageContainer);
         hideMessage(analysisMessageContainer);
-        resultsContainer.innerHTML = '';
-        chartContainer.innerHTML = '';
-        chartContainer.classList.add('hidden');
-        columnSelection.classList.add('hidden');
-        ksFields.classList.add('hidden');
-        tIndependentFields.classList.add('hidden');
-        tDependentFields.classList.add('hidden');
-        uFields.classList.add('hidden');
-        wilcoxonFields.classList.add('hidden');
+        clearAnalysisResults();
 
         const file = fileInput.files[0];
         if (!file) {
@@ -228,49 +201,33 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const xhr = new XMLHttpRequest();
+        try {
+            const response = await fetch('/upload/', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Token ${token}`
+                },
+                body: formData
+            });
 
-        xhr.open('POST', '/upload/', true);
-        xhr.setRequestHeader('Authorization', `Token ${token}`);
+            const data = await response.json();
 
-        xhr.onload = function() {
-            if (xhr.status >= 200 && xhr.status < 300) {
-                try {
-                    const data = JSON.parse(xhr.responseText);
-                    if (data.error) {
-                        showMessage(uploadMessageContainer, data.error, 'error');
-                    } else {
-                        showMessage(uploadMessageContainer, 'Файл успешно загружен.', 'success');
-                        columns = data.columns;
-                        populateColumnSelectOptions(columns);
-                        populateKsVariableSelects();
-                        populateTIndepVariableSelects();
-                        populateTDepVariableSelects();
-                        populateUVariableSelects();
-                        populateWilcoxonVariableSelects();
-                        columnSelection.classList.remove('hidden');
-                    }
-                } catch (e) {
-                    showMessage(uploadMessageContainer, 'Ошибка при обработке ответа сервера.', 'error');
-                    console.error('Ошибка при обработке ответа сервера:', e);
-                }
-            } else {
-                try {
-                    const errorData = JSON.parse(xhr.responseText);
-                    showMessage(uploadMessageContainer, `Ошибка загрузки файла: ${errorData.error || 'Неизвестная ошибка'}`, 'error');
-                } catch (e) {
-                    showMessage(uploadMessageContainer, `Ошибка загрузки файла: ${xhr.statusText}`, 'error');
-                }
+            if (!response.ok) {
+                showMessage(uploadMessageContainer, data.error || 'Неизвестная ошибка при загрузке файла.', 'error');
+                return;
             }
-        };
 
-        xhr.onerror = function() {
+            showMessage(uploadMessageContainer, 'Файл успешно загружен.', 'success');
+            columns = data.columns || [];
+            populateAllVariableSelects();
+            columnSelection.classList.remove('hidden');
+        } catch (error) {
+            console.error('Ошибка при загрузке файла:', error);
             showMessage(uploadMessageContainer, 'Ошибка при загрузке файла. Проверьте соединение.', 'error');
-        };
-
-        xhr.send(formData);
+        }
     });
 
+    // Функции для отображения и скрытия сообщений
     function showMessage(container, message, type) {
         container.classList.remove('hidden', 'success', 'error', 'warning');
         container.textContent = message;
@@ -283,30 +240,11 @@ document.addEventListener('DOMContentLoaded', () => {
         container.className = 'message-container hidden';
     }
 
-    function populateColumnSelectOptions(columns) {
-        column1Select.innerHTML = "<option value=''>-- Выберите колонку --</option>";
-        column2Select.innerHTML = "<option value=''>-- Выберите колонку --</option>";
-
-        columns.forEach(column => {
-            const option1 = document.createElement("option");
-            option1.value = column;
-            option1.textContent = column;
-
-            const option2 = document.createElement("option");
-            option2.value = column;
-            option2.textContent = column;
-
-            column1Select.appendChild(option1);
-            column2Select.appendChild(option2);
-        });
-    }
-
+    // Обработчик нажатия кнопки анализа
     analyzeButton.addEventListener('click', async () => {
         hideMessage(uploadMessageContainer);
         hideMessage(analysisMessageContainer);
-        resultsContainer.innerHTML = '';
-        chartContainer.innerHTML = '';
-        chartContainer.classList.add('hidden');
+        clearAnalysisResults();
 
         let analysisData = {
             tests: []
@@ -319,113 +257,152 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        if (analysisType === 'kolmogorov_smirnov') {
-            const independentVariable = independentVariableSelect.value;
-            const groupingVariable = groupingVariableSelect.value;
+        // Формирование данных для анализа в зависимости от выбранного типа теста
+        switch(analysisType) {
+            case 'kolmogorov_smirnov':
+                const independentVariable = independentVariableSelect.value;
+                const groupingVariable = groupingVariableSelect.value;
 
-            if (!independentVariable || !groupingVariable) {
-                showMessage(analysisMessageContainer, 'Ошибка: Пожалуйста, выберите независимую и группирующую переменные для Критерия Колмогорова-Смирнова.', 'error');
-                return;
-            }
+                if (!independentVariable || !groupingVariable) {
+                    showMessage(analysisMessageContainer, 'Ошибка: Пожалуйста, выберите независимую и группирующую переменные для Критерия Колмогорова-Смирнова.', 'error');
+                    return;
+                }
 
-            analysisData.tests.push({
-                type: analysisType,
-                independent_variable: independentVariable,
-                grouping_variable: groupingVariable
-            });
-        } else if (analysisType === 't_criterion_student_independent') {
-            const tIndepIndependentVariable = tIndepIndependentVariableSelect.value;
-            const tIndepGroupingVariable = tIndepGroupingVariableSelect.value;
+                analysisData.tests.push({
+                    type: analysisType,
+                    independent_variable: independentVariable,
+                    grouping_variable: groupingVariable
+                });
+                break;
 
-            if (!tIndepIndependentVariable || !tIndepGroupingVariable) {
-                showMessage(analysisMessageContainer, 'Ошибка: Пожалуйста, выберите независимую и группирующую переменные для Т-критерия Стьюдента (независимые выборки).', 'error');
-                return;
-            }
+            case 't_criterion_student_independent':
+                const tIndepIndependentVariable = tIndepIndependentVariableSelect.value;
+                const tIndepGroupingVariable = tIndepGroupingVariableSelect.value;
 
-            analysisData.tests.push({
-                type: analysisType,
-                column1: tIndepIndependentVariable,
-                column2: tIndepGroupingVariable
-            });
-        } else if (analysisType === 't_criterion_student_dependent') {
-            const tDepVariable1 = tDepVariable1Select.value;
-            const tDepVariable2 = tDepVariable2Select.value;
+                if (!tIndepIndependentVariable || !tIndepGroupingVariable) {
+                    showMessage(analysisMessageContainer, 'Ошибка: Пожалуйста, выберите независимую и группирующую переменные для Т-критерия Стьюдента (независимые выборки).', 'error');
+                    return;
+                }
 
-            if (!tDepVariable1 || !tDepVariable2) {
-                showMessage(analysisMessageContainer, 'Ошибка: Пожалуйста, выберите обе переменные для Т-критерия Стьюдента (зависимые выборки).', 'error');
-                return;
-            }
+                analysisData.tests.push({
+                    type: analysisType,
+                    column1: tIndepIndependentVariable,
+                    column2: tIndepGroupingVariable
+                });
+                break;
 
-            if (tDepVariable1 === tDepVariable2) {
-                showMessage(analysisMessageContainer, 'Ошибка: Выберите разные переменные для анализа.', 'error');
-                return;
-            }
+            case 't_criterion_student_dependent':
+                const tDepVariable1 = tDepVariable1Select.value;
+                const tDepVariable2 = tDepVariable2Select.value;
 
-            analysisData.tests.push({
-                type: analysisType,
-                column1: tDepVariable1,
-                column2: tDepVariable2
-            });
-        } else if (analysisType === 'u_criterion_mann_whitney') {
-            const uIndependentVariable = uIndependentVariableSelect.value;
-            const uGroupingVariable = uGroupingVariableSelect.value;
+                if (!tDepVariable1 || !tDepVariable2) {
+                    showMessage(analysisMessageContainer, 'Ошибка: Пожалуйста, выберите обе переменные для Т-критерия Стьюдента (зависимые выборки).', 'error');
+                    return;
+                }
 
-            if (!uIndependentVariable || !uGroupingVariable) {
-                showMessage(analysisMessageContainer, 'Ошибка: Пожалуйста, выберите независимую и группирующую переменные для U-критерия Манна-Уитни.', 'error');
-                return;
-            }
+                if (tDepVariable1 === tDepVariable2) {
+                    showMessage(analysisMessageContainer, 'Ошибка: Выберите разные переменные для анализа.', 'error');
+                    return;
+                }
 
-            if (uIndependentVariable === uGroupingVariable) {
-                showMessage(analysisMessageContainer, 'Ошибка: Нельзя выбирать одинаковые колонки для независимой и группирующей переменной. Пожалуйста, выберите разные колонки.', 'error');
-                return;
-            }
+                analysisData.tests.push({
+                    type: analysisType,
+                    column1: tDepVariable1,
+                    column2: tDepVariable2
+                });
+                break;
 
-            analysisData.tests.push({
-                type: analysisType,
-                column1: uIndependentVariable,
-                column2: uGroupingVariable
-            });
-        } else if (analysisType === 't_criterion_wilcoxon') {
-            const wilcoxonVariable1 = document.getElementById('wilcoxon-variable1-select').value;
-            const wilcoxonVariable2 = document.getElementById('wilcoxon-variable2-select').value;
+            case 'u_criterion_mann_whitney':
+                const uIndependentVariable = uIndependentVariableSelect.value;
+                const uGroupingVariable = uGroupingVariableSelect.value;
 
-            if (!wilcoxonVariable1 || !wilcoxonVariable2) {
-                showMessage(analysisMessageContainer, 'Ошибка: Пожалуйста, выберите обе переменные для Т-критерия Уилкоксона.', 'error');
-                return;
-            }
+                if (!uIndependentVariable || !uGroupingVariable) {
+                    showMessage(analysisMessageContainer, 'Ошибка: Пожалуйста, выберите независимую и группирующую переменные для U-критерия Манна-Уитни.', 'error');
+                    return;
+                }
 
-            if (wilcoxonVariable1 === wilcoxonVariable2) {
-                showMessage(analysisMessageContainer, 'Ошибка: Выберите разные переменные для анализа.', 'error');
-                return;
-            }
+                if (uIndependentVariable === uGroupingVariable) {
+                    showMessage(analysisMessageContainer, 'Ошибка: Нельзя выбирать одинаковые колонки для независимой и группирующей переменной. Пожалуйста, выберите разные колонки.', 'error');
+                    return;
+                }
 
-            analysisData.tests.push({
-                type: analysisType,
-                column1: wilcoxonVariable1,
-                column2: wilcoxonVariable2
-            });
-        } else {
-            const column1 = column1Select.value;
-            const column2 = column2Select.value;
+                analysisData.tests.push({
+                    type: analysisType,
+                    column1: uIndependentVariable,
+                    column2: uGroupingVariable
+                });
+                break;
 
-            if (!column1 || !column2) {
-                showMessage(analysisMessageContainer, 'Ошибка: Пожалуйста, выберите обе колонки для анализа.', 'error');
-                return;
-            }
+            case 't_criterion_wilcoxon':
+                const wilcoxonVariable1 = document.getElementById('wilcoxon-variable1-select').value;
+                const wilcoxonVariable2 = document.getElementById('wilcoxon-variable2-select').value;
 
-            if (column1 === column2) {
-                showMessage(analysisMessageContainer, 'Ошибка: Выберите разные колонки для анализа.', 'error');
-                return;
-            }
+                if (!wilcoxonVariable1 || !wilcoxonVariable2) {
+                    showMessage(analysisMessageContainer, 'Ошибка: Пожалуйста, выберите обе переменные для Т-критерия Уилкоксона.', 'error');
+                    return;
+                }
 
-            analysisData.tests.push({
-                type: analysisType,
-                column1: column1,
-                column2: column2
-            });
+                if (wilcoxonVariable1 === wilcoxonVariable2) {
+                    showMessage(analysisMessageContainer, 'Ошибка: Выберите разные переменные для анализа.', 'error');
+                    return;
+                }
+
+                analysisData.tests.push({
+                    type: analysisType,
+                    column1: wilcoxonVariable1,
+                    column2: wilcoxonVariable2
+                });
+                break;
+
+            case 'chi2_pearson':
+                const chi2Variable1 = chi2Variable1Select.value;
+                const chi2Variable2 = chi2Variable2Select.value;
+
+                if (!chi2Variable1 || !chi2Variable2) {
+                    showMessage(analysisMessageContainer, 'Ошибка: Пожалуйста, выберите обе группирующие переменные для Критерия Хи-квадрат Пирсона.', 'error');
+                    return;
+                }
+
+                if (chi2Variable1 === chi2Variable2) {
+                    showMessage(analysisMessageContainer, 'Ошибка: Выберите разные переменные для анализа.', 'error');
+                    return;
+                }
+
+                analysisData.tests.push({
+                    type: analysisType,
+                    column1: chi2Variable1,
+                    column2: chi2Variable2
+                });
+                break;
+
+            // Добавьте другие тесты по необходимости
+            default:
+                const column1 = column1Select.value;
+                const column2 = column2Select.value;
+
+                if (!column1 || !column2) {
+                    showMessage(analysisMessageContainer, 'Ошибка: Пожалуйста, выберите обе колонки для анализа.', 'error');
+                    return;
+                }
+
+                if (column1 === column2) {
+                    showMessage(analysisMessageContainer, 'Ошибка: Выберите разные колонки для анализа.', 'error');
+                    return;
+                }
+
+                analysisData.tests.push({
+                    type: analysisType,
+                    column1: column1,
+                    column2: column2
+                });
         }
 
         const token = localStorage.getItem('token');
+
+        if (!token) {
+            showMessage(analysisMessageContainer, 'Ошибка: Токен не найден. Пожалуйста, авторизуйтесь.', 'error');
+            return;
+        }
 
         try {
             const response = await fetch('/custom-analyze/', {
@@ -464,26 +441,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    function mapErrorMessage(errorMessage) {
-        const typeErrorPattern = /unsupported operand type\(s\) for .*: 'str' and 'int'/i;
-        const mixedTypeErrorPattern = /'int'\s+and\s+'str'|'str'\s+and\s+'int'/i;
-        const binaryErrorPattern = /Группирующая переменная ".+" должна быть бинарной \(содержать два уникальных значения\)/i;
-        const nanPattern = /nan/i;
-        const identicalColumnsPattern = /одинаковые колонки/i;
-
-        if (identicalColumnsPattern.test(errorMessage)) {
-            return 'Нельзя выбирать одинаковые колонки для независимой и группирующей переменной. Пожалуйста, выберите разные колонки.';
-        } else if (typeErrorPattern.test(errorMessage) || mixedTypeErrorPattern.test(errorMessage)) {
-            return 'Вы выбрали строковые и числовые значения одновременно. Пожалуйста, выберите либо числовые колонки, либо корректный тип данных.';
-        } else if (binaryErrorPattern.test(errorMessage)) {
-            return 'Группирующая переменная должна содержать только два уникальных значения (например, 0 и 1).';
-        } else if (nanPattern.test(errorMessage)) {
-            return 'Некоторые значения в результате анализа равны NaN. Проверьте данные.';
-        }
-
-        return 'Произошла неизвестная ошибка при выполнении анализа. Попробуйте позже или свяжитесь с поддержкой.';
+    // Функция для отображения сообщений
+    function showMessage(container, message, type) {
+        container.classList.remove('hidden', 'success', 'error', 'warning');
+        container.textContent = message;
+        container.classList.add(type);
     }
 
+    // Функция для скрытия сообщений
+    function hideMessage(container) {
+        container.classList.add('hidden');
+        container.textContent = '';
+        container.className = 'message-container hidden';
+    }
+
+    // Функция для отображения результатов анализа
     function displayFormattedResults(result) {
         resultsContainer.innerHTML = '';
 
@@ -521,169 +493,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 errorPara.classList.add('error-message');
                 section.appendChild(errorPara);
 
-                switch(testName) {
-                    case 'kolmogorov_smirnov':
-                        if (testResult.error.includes('независимую переменную')) {
-                            independentVariableSelect.classList.add('input-error');
-                        } else if (testResult.error.includes('группирующую переменную')) {
-                            groupingVariableSelect.classList.add('input-error');
-                        }
-                        break;
-                    case 't_criterion_student_independent':
-                        if (testResult.error.includes('column1')) {
-                            tIndepIndependentVariableSelect.classList.add('input-error');
-                        }
-                        if (testResult.error.includes('column2')) {
-                            tIndepGroupingVariableSelect.classList.add('input-error');
-                        }
-                        break;
-                    case 't_criterion_student_dependent':
-                        if (testResult.error.includes('column1')) {
-                            tDepVariable1Select.classList.add('input-error');
-                        }
-                        if (testResult.error.includes('column2')) {
-                            tDepVariable2Select.classList.add('input-error');
-                        }
-                        break;
-                    case 'u_criterion_mann_whitney':
-                        if (testResult.error.includes('одинаковые колонки')) {
-                            uIndependentVariableSelect.classList.add('input-error');
-                            uGroupingVariableSelect.classList.add('input-error');
-                        }
-                        if (testResult.error.includes('независимую переменную')) {
-                            uIndependentVariableSelect.classList.add('input-error');
-                        }
-                        if (testResult.error.includes('группирующую переменную')) {
-                            uGroupingVariableSelect.classList.add('input-error');
-                        }
-                        break;
-                    default:
-                        if (testResult.error.includes('колонки') || testResult.error.includes('переменные')) {
-                            column1Select.classList.add('input-error');
-                            column2Select.classList.add('input-error');
-                        }
-                }
+                highlightErrorFields(testName, testResult.error);
             } else {
                 // Удаление выделения ошибок, если анализ прошёл успешно
-                independentVariableSelect.classList.remove('input-error');
-                groupingVariableSelect.classList.remove('input-error');
-                column1Select.classList.remove('input-error');
-                column2Select.classList.remove('input-error');
-                tIndepIndependentVariableSelect.classList.remove('input-error');
-                tIndepGroupingVariableSelect.classList.remove('input-error');
-                tDepVariable1Select.classList.remove('input-error');
-                tDepVariable2Select.classList.remove('input-error');
-                uIndependentVariableSelect.classList.remove('input-error');
-                uGroupingVariableSelect.classList.remove('input-error');
+                removeAllInputErrors();
 
-                const table = document.createElement('table');
-                table.classList.add('result-table');
-
-                const thead = document.createElement('thead');
-                const headerRow = document.createElement('tr');
-
-                const thParam = document.createElement('th');
-                thParam.textContent = 'Параметр';
-                headerRow.appendChild(thParam);
-
-                const thValue = document.createElement('th');
-                thValue.textContent = 'Значение';
-                headerRow.appendChild(thValue);
-
-                thead.appendChild(headerRow);
-                table.appendChild(thead);
-
-                const tbody = document.createElement('tbody');
-
-                for (const [key, value] of Object.entries(testResult)) {
-                    const dataRow = document.createElement('tr');
-
-                    const tdKey = document.createElement('td');
-                    tdKey.textContent = formatKey(key);
-                    dataRow.appendChild(tdKey);
-
-                    const tdValue = document.createElement('td');
-                    tdValue.textContent = value;
-                    dataRow.appendChild(tdValue);
-
-                    tbody.appendChild(dataRow);
-                }
-
-                table.appendChild(tbody);
+                const table = createResultTable(testResult);
                 section.appendChild(table);
 
-                // Добавление пояснительного текста для конкретных тестов
-                if (testName === 'kolmogorov_smirnov') {
-                    const explanation = document.createElement('div');
-                    explanation.classList.add('description-container');
-
-                    const p1 = document.createElement('p');
-                    p1.textContent = `Если p < 0.05, нулевая гипотеза отвергается, выборка не подчиняется нормальному распределению.`;
-
-                    const p2 = document.createElement('p');
-                    p2.textContent = `Если p ≥ 0.05, принимается нулевая гипотеза, выборка подчиняется нормальному распределению.`;
-
-                    explanation.appendChild(p1);
-                    explanation.appendChild(p2);
-
-                    section.appendChild(explanation);
-                } else if (testName === 't_criterion_student_independent') {
-                    const explanation = document.createElement('div');
-                    explanation.classList.add('description-container');
-
-                    const p1 = document.createElement('p');
-                    p1.textContent = `Если p < 0.05, нулевая гипотеза отвергается, принимается альтернативная, различия статистически значимы.`;
-
-                    const p2 = document.createElement('p');
-                    p2.textContent = `Если p ≥ 0.05, различия незначимы.`;
-
-                    explanation.appendChild(p1);
-                    explanation.appendChild(p2);
-
-                    section.appendChild(explanation);
-                } else if (testName === 't_criterion_student_dependent') {
-                    const explanation = document.createElement('div');
-                    explanation.classList.add('description-container');
-
-                    const p1 = document.createElement('p');
-                    p1.textContent = `Если p < 0.05, нулевая гипотеза отвергается, различия между зависимыми группами значимы.`;
-
-                    const p2 = document.createElement('p');
-                    p2.textContent = `Если p ≥ 0.05, различия незначимы.`;
-
-                    explanation.appendChild(p1);
-                    explanation.appendChild(p2);
-
-                    section.appendChild(explanation);
-                } else if (testName === 'u_criterion_mann_whitney') {
-                    const explanation = document.createElement('div');
-                    explanation.classList.add('description-container');
-
-                    const p1 = document.createElement('p');
-                    p1.textContent = `Если p < 0.05, нулевая гипотеза отвергается, принимается альтернативная, различия обладают статистической значимостью и носят системный характер.`;
-
-                    const p2 = document.createElement('p');
-                    p2.textContent = `Если p ≥ 0.05, принимается нулевая гипотеза, различия не являются статистически значимыми и носят случайный характер.`;
-
-                    explanation.appendChild(p1);
-                    explanation.appendChild(p2);
-
-                    section.appendChild(explanation);
-                } else if (testName === 't_criterion_wilcoxon') {
-                    const explanation = document.createElement('div');
-                    explanation.classList.add('description-container');
-
-                    const p1 = document.createElement('p');
-                    p1.textContent = `Если p < 0.05, нулевая гипотеза отвергается, принимается альтернативная, различия обладают статистической значимостью и носят системный характер.`;
-
-                    const p2 = document.createElement('p');
-                    p2.textContent = `Если p ≥ 0.05, принимается нулевая гипотеза, различия не являются статистически значимыми и носят случайный характер.`;
-
-                    explanation.appendChild(p1);
-                    explanation.appendChild(p2);
-
-                    section.appendChild(explanation);
-                }
+                addTestExplanation(testName);
             }
 
             resultsContainer.appendChild(section);
@@ -692,7 +510,212 @@ document.addEventListener('DOMContentLoaded', () => {
         resultsContainer.classList.remove('hidden');
     }
 
+    // Функция для создания таблицы результатов
+    function createResultTable(testResult) {
+        console.log('Создание таблицы для:', testResult); // Логируем testResult
+
+        const table = document.createElement('table');
+        table.classList.add('result-table');
+
+        const thead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+
+        const thParam = document.createElement('th');
+        thParam.textContent = 'Параметр';
+        headerRow.appendChild(thParam);
+
+        const thValue = document.createElement('th');
+        thValue.textContent = 'Значение';
+        headerRow.appendChild(thValue);
+
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+
+        const tbody = document.createElement('tbody');
+
+        for (const [key, value] of Object.entries(testResult)) {
+            const dataRow = document.createElement('tr');
+
+            const tdKey = document.createElement('td');
+            // Нормализуем ключ
+            const normalizedKey = key.toLowerCase().replace(/ /g, '_');
+            if (parameterExplanations[normalizedKey]) {
+                tdKey.textContent = `${formatKey(key)} (${parameterExplanations[normalizedKey]})`;
+            } else {
+                tdKey.textContent = formatKey(key);
+            }
+            dataRow.appendChild(tdKey);
+
+            const tdValue = document.createElement('td');
+            tdValue.textContent = value;
+            dataRow.appendChild(tdValue);
+
+            tbody.appendChild(dataRow);
+        }
+
+        table.appendChild(tbody);
+        return table;
+    }
+
+    // Функция для форматирования ключей
     function formatKey(key) {
         return key.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
     }
+
+    // Функция для добавления пояснений к тестам
+    function addTestExplanation(testName) {
+        const explanation = document.createElement('div');
+        explanation.classList.add('description-container');
+
+        let p1, p2;
+
+        switch(testName) {
+            case 'kolmogorov_smirnov':
+                p1 = document.createElement('p');
+                p1.textContent = `Если p < 0.05, нулевая гипотеза отвергается, выборка не подчиняется нормальному распределению.`;
+
+                p2 = document.createElement('p');
+                p2.textContent = `Если p ≥ 0.05, принимается нулевая гипотеза, выборка подчиняется нормальному распределению.`;
+                break;
+
+            case 't_criterion_student_independent':
+                p1 = document.createElement('p');
+                p1.textContent = `Если p < 0.05, нулевая гипотеза отвергается, принимается альтернативная, различия статистически значимы.`;
+
+                p2 = document.createElement('p');
+                p2.textContent = `Если p ≥ 0.05, различия незначимы.`;
+                break;
+
+            case 't_criterion_student_dependent':
+                p1 = document.createElement('p');
+                p1.textContent = `Если p < 0.05, нулевая гипотеза отвергается, различия между зависимыми группами значимы.`;
+
+                p2 = document.createElement('p');
+                p2.textContent = `Если p ≥ 0.05, различия незначимы.`;
+                break;
+
+            case 'u_criterion_mann_whitney':
+                p1 = document.createElement('p');
+                p1.textContent = `Если p < 0.05, нулевая гипотеза отвергается, принимается альтернативная, различия обладают статистической значимостью и носят системный характер.`;
+
+                p2 = document.createElement('p');
+                p2.textContent = `Если p ≥ 0.05, принимается нулевая гипотеза, различия не являются статистически значимыми и носят случайный характер.`;
+                break;
+
+            case 't_criterion_wilcoxon':
+                p1 = document.createElement('p');
+                p1.textContent = `Если p < 0.05, нулевая гипотеза отвергается, принимается альтернативная, различия обладают статистической значимостью и носят системный характер.`;
+
+                p2 = document.createElement('p');
+                p2.textContent = `Если p ≥ 0.05, принимается нулевая гипотеза, различия не являются статистически значимыми и носят случайный характер.`;
+                break;
+
+            case 'chi2_pearson':
+                p1 = document.createElement('p');
+                p1.textContent = `Если p < 0.05, нулевая гипотеза отвергается, существует статистически значимая зависимость между переменными.`;
+
+                p2 = document.createElement('p');
+                p2.textContent = `Если p ≥ 0.05, принимается нулевая гипотеза, зависимости между переменными нет.`;
+                break;
+
+            // Добавьте пояснения для других тестов по необходимости
+
+            default:
+                return;
+        }
+
+        explanation.appendChild(p1);
+        explanation.appendChild(p2);
+        resultsContainer.lastChild.appendChild(explanation);
+    }
+
+    // Функция для выделения полей с ошибками
+    function highlightErrorFields(testName, errorMessage) {
+        switch(testName) {
+            case 'kolmogorov_smirnov':
+                if (errorMessage.includes('независимую переменную')) {
+                    independentVariableSelect.classList.add('input-error');
+                }
+                if (errorMessage.includes('группирующую переменную')) {
+                    groupingVariableSelect.classList.add('input-error');
+                }
+                break;
+            case 't_criterion_student_independent':
+                if (errorMessage.includes('column1')) {
+                    tIndepIndependentVariableSelect.classList.add('input-error');
+                }
+                if (errorMessage.includes('column2')) {
+                    tIndepGroupingVariableSelect.classList.add('input-error');
+                }
+                break;
+            case 't_criterion_student_dependent':
+                if (errorMessage.includes('column1')) {
+                    tDepVariable1Select.classList.add('input-error');
+                }
+                if (errorMessage.includes('column2')) {
+                    tDepVariable2Select.classList.add('input-error');
+                }
+                break;
+            case 'u_criterion_mann_whitney':
+                if (errorMessage.includes('одинаковые колонки')) {
+                    uIndependentVariableSelect.classList.add('input-error');
+                    uGroupingVariableSelect.classList.add('input-error');
+                }
+                if (errorMessage.includes('независимую переменную')) {
+                    uIndependentVariableSelect.classList.add('input-error');
+                }
+                if (errorMessage.includes('группирующую переменную')) {
+                    uGroupingVariableSelect.classList.add('input-error');
+                }
+                break;
+            case 'chi2_pearson':
+                if (errorMessage.includes('переменную')) {
+                    chi2Variable1Select.classList.add('input-error');
+                    chi2Variable2Select.classList.add('input-error');
+                }
+                break;
+            // Добавьте обработку для других тестов при необходимости
+            default:
+                if (errorMessage.includes('колонки') || errorMessage.includes('переменные')) {
+                    column1Select.classList.add('input-error');
+                    column2Select.classList.add('input-error');
+                }
+        }
+    }
+
+    // Функция для удаления выделения ошибок со всех полей
+    function removeAllInputErrors() {
+        independentVariableSelect.classList.remove('input-error');
+        groupingVariableSelect.classList.remove('input-error');
+        column1Select.classList.remove('input-error');
+        column2Select.classList.remove('input-error');
+        tIndepIndependentVariableSelect.classList.remove('input-error');
+        tIndepGroupingVariableSelect.classList.remove('input-error');
+        tDepVariable1Select.classList.remove('input-error');
+        tDepVariable2Select.classList.remove('input-error');
+        uIndependentVariableSelect.classList.remove('input-error');
+        uGroupingVariableSelect.classList.remove('input-error');
+        chi2Variable1Select.classList.remove('input-error');
+        chi2Variable2Select.classList.remove('input-error');
+    }
+
+    // Функция для отображения сообщений об ошибках
+    function mapErrorMessage(errorMessage) {
+        const patterns = [
+            { regex: /unsupported operand type\(s\) for .*: 'str' and 'int'/i, message: 'Вы выбрали строковые и числовые значения одновременно. Пожалуйста, выберите либо числовые колонки, либо корректный тип данных.' },
+            { regex: /'int'\s+and\s+'str'|'str'\s+and\s+'int'/i, message: 'Вы выбрали строковые и числовые значения одновременно. Пожалуйста, выберите либо числовые колонки, либо корректный тип данных.' },
+            { regex: /Группирующая переменная ".+" должна быть бинарной \(содержать два уникальных значения\)/i, message: 'Группирующая переменная должна содержать только два уникальных значения (например, 0 и 1).' },
+            { regex: /nan/i, message: 'Некоторые значения в результате анализа равны NaN. Проверьте данные.' },
+            { regex: /одинаковые колонки/i, message: 'Нельзя выбирать одинаковые колонки для независимой и группирующей переменной. Пожалуйста, выберите разные колонки.' }
+        ];
+
+        for (const pattern of patterns) {
+            if (pattern.regex.test(errorMessage)) {
+                return pattern.message;
+            }
+        }
+
+        return 'Произошла неизвестная ошибка при выполнении анализа. Попробуйте позже или свяжитесь с поддержкой.';
+    }
+
 });
