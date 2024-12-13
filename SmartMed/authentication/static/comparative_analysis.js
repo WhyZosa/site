@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const uFields = document.getElementById('u-fields'); 
     const wilcoxonFields = document.getElementById('wilcoxon-fields'); // Добавлен блок для Wilcoxon
     const chi2Fields = document.getElementById('chi2-fields'); // Добавлен блок для Chi2
+    const sensitivitySpecificityFields = document.getElementById('sensitivity_specificity-fields'); // Добавлен блок для Чувствительности и Специфичности
     const defaultFields = document.getElementById('default-fields');
     const independentVariableSelect = document.getElementById('independent-variable-select');
     const groupingVariableSelect = document.getElementById('grouping-variable-select');
@@ -29,6 +30,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const uGroupingVariableSelect = document.getElementById('u-grouping-variable-select');
     const chi2Variable1Select = document.getElementById('chi2-variable1-select');
     const chi2Variable2Select = document.getElementById('chi2-variable2-select');
+    const sensitivityVariable1Select = document.getElementById('sensitivity-variable1-select');
+    const sensitivityVariable2Select = document.getElementById('sensitivity-variable2-select');
 
     let columns = [];
 
@@ -83,6 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
         uFields.classList.add('hidden');
         wilcoxonFields.classList.add('hidden');
         chi2Fields.classList.add('hidden');
+        sensitivitySpecificityFields.classList.add('hidden');
         defaultFields.classList.add('hidden');
 
         // Отображаем соответствующие поля
@@ -104,6 +108,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 break;
             case 'chi2_pearson': // Добавляем отображение для Chi2
                 chi2Fields.classList.remove('hidden');
+                break;
+            case 'sensitivity_specificity': // Добавляем отображение для Чувствительности и Специфичности
+                sensitivitySpecificityFields.classList.remove('hidden');
                 break;
             default:
                 defaultFields.classList.remove('hidden');
@@ -148,6 +155,12 @@ document.addEventListener('DOMContentLoaded', () => {
         populateSelect(chi2Variable2Select, columns, "Выберите вторую переменную");
     }
 
+    // Функция для заполнения селектов Чувствительности и Специфичности
+    function populateSensitivitySpecificityVariableSelects() {
+        populateSelect(sensitivityVariable1Select, columns, "Выберите фактор риска");
+        populateSelect(sensitivityVariable2Select, columns, "Выберите исход");
+    }
+
     // Функция для заполнения селектов Уилкоксона
     function populateWilcoxonVariableSelects() {
         populateSelect(document.getElementById('wilcoxon-variable1-select'), columns, "Выберите первую переменную");
@@ -176,6 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
         populateUVariableSelects();
         populateChi2VariableSelects(); // Добавлено
         populateWilcoxonVariableSelects();
+        populateSensitivitySpecificityVariableSelects(); // Добавлено
     }
 
     // Обработчик отправки формы загрузки файла
@@ -375,6 +389,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 break;
 
+            case 'sensitivity_specificity':
+                const sensitivityVariable1 = sensitivityVariable1Select.value;
+                const sensitivityVariable2 = sensitivityVariable2Select.value;
+
+                if (!sensitivityVariable1 || !sensitivityVariable2) {
+                    showMessage(analysisMessageContainer, 'Ошибка: Пожалуйста, выберите фактор риска и исход для Чувствительности и Специфичности.', 'error');
+                    return;
+                }
+
+                analysisData.tests.push({
+                    type: analysisType,
+                    column1: sensitivityVariable1,
+                    column2: sensitivityVariable2
+                });
+                break;
+
             // Добавьте другие тесты по необходимости
             default:
                 const column1 = column1Select.value;
@@ -547,7 +577,11 @@ document.addEventListener('DOMContentLoaded', () => {
             dataRow.appendChild(tdKey);
 
             const tdValue = document.createElement('td');
-            tdValue.textContent = value;
+            if (Array.isArray(value)) {
+                tdValue.textContent = JSON.stringify(value);
+            } else {
+                tdValue.textContent = value;
+            }
             dataRow.appendChild(tdValue);
 
             tbody.appendChild(dataRow);
@@ -572,18 +606,18 @@ document.addEventListener('DOMContentLoaded', () => {
         switch(testName) {
             case 'kolmogorov_smirnov':
                 p1 = document.createElement('p');
-                p1.textContent = `Если p < 0.05, нулевая гипотеза отвергается, выборка не подчиняется нормальному распределению.`;
+                p1.textContent = `Если p < 0.05, нулевая гипотеза отвергается, выборка не подчиняется одному распределению.`;
 
                 p2 = document.createElement('p');
-                p2.textContent = `Если p ≥ 0.05, принимается нулевая гипотеза, выборка подчиняется нормальному распределению.`;
+                p2.textContent = `Если p ≥ 0.05, нулевая гипотеза не отвергается, выборки могут подчиняться одному распределению.`;
                 break;
 
             case 't_criterion_student_independent':
                 p1 = document.createElement('p');
-                p1.textContent = `Если p < 0.05, нулевая гипотеза отвергается, принимается альтернативная, различия статистически значимы.`;
+                p1.textContent = `Если p < 0.05, нулевая гипотеза отвергается, различия между группами статистически значимы.`;
 
                 p2 = document.createElement('p');
-                p2.textContent = `Если p ≥ 0.05, различия незначимы.`;
+                p2.textContent = `Если p ≥ 0.05, нулевая гипотеза не отвергается, различия между группами не являются статистически значимыми.`;
                 break;
 
             case 't_criterion_student_dependent':
@@ -591,15 +625,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 p1.textContent = `Если p < 0.05, нулевая гипотеза отвергается, различия между зависимыми группами значимы.`;
 
                 p2 = document.createElement('p');
-                p2.textContent = `Если p ≥ 0.05, различия незначимы.`;
+                p2.textContent = `Если p ≥ 0.05, нулевая гипотеза не отвергается, различия между зависимыми группами не являются статистически значимыми.`;
                 break;
 
             case 'u_criterion_mann_whitney':
                 p1 = document.createElement('p');
-                p1.textContent = `Если p < 0.05, нулевая гипотеза отвергается, принимается альтернативная, различия обладают статистической значимостью и носят системный характер.`;
+                p1.textContent = `Если p < 0.05, нулевая гипотеза отвергается, различия между группами статистически значимы и носят системный характер.`;
 
                 p2 = document.createElement('p');
-                p2.textContent = `Если p ≥ 0.05, принимается нулевая гипотеза, различия не являются статистически значимыми и носят случайный характер.`;
+                p2.textContent = `Если p ≥ 0.05, нулевая гипотеза не отвергается, различия не являются статистически значимыми и носят случайный характер.`;
                 break;
 
             case 't_criterion_wilcoxon':
@@ -616,6 +650,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 p2 = document.createElement('p');
                 p2.textContent = `Если p ≥ 0.05, принимается нулевая гипотеза, зависимости между переменными нет.`;
+                break;
+
+            case 'sensitivity_specificity':
+                p1 = document.createElement('p');
+                p1.textContent = `Чувствительность (Sensitivity) показывает, насколько тест способен правильно идентифицировать положительные случаи. Высокая чувствительность означает, что тест редко пропускает истинные положительные результаты.`;
+
+                p2 = document.createElement('p');
+                p2.textContent = `Специфичность (Specificity) показывает, насколько тест способен правильно идентифицировать отрицательные случаи. Высокая специфичность означает, что тест редко ошибается в сторону ложноположительных результатов.`;
                 break;
 
             // Добавьте пояснения для других тестов по необходимости
@@ -674,6 +716,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     chi2Variable2Select.classList.add('input-error');
                 }
                 break;
+            case 'sensitivity_specificity':
+                if (errorMessage.includes('фактор риска')) {
+                    sensitivityVariable1Select.classList.add('input-error');
+                }
+                if (errorMessage.includes('исход')) {
+                    sensitivityVariable2Select.classList.add('input-error');
+                }
+                break;
             // Добавьте обработку для других тестов при необходимости
             default:
                 if (errorMessage.includes('колонки') || errorMessage.includes('переменные')) {
@@ -697,6 +747,8 @@ document.addEventListener('DOMContentLoaded', () => {
         uGroupingVariableSelect.classList.remove('input-error');
         chi2Variable1Select.classList.remove('input-error');
         chi2Variable2Select.classList.remove('input-error');
+        sensitivityVariable1Select.classList.remove('input-error');
+        sensitivityVariable2Select.classList.remove('input-error');
     }
 
     // Функция для отображения сообщений об ошибках
@@ -706,7 +758,9 @@ document.addEventListener('DOMContentLoaded', () => {
             { regex: /'int'\s+and\s+'str'|'str'\s+and\s+'int'/i, message: 'Вы выбрали строковые и числовые значения одновременно. Пожалуйста, выберите либо числовые колонки, либо корректный тип данных.' },
             { regex: /Группирующая переменная ".+" должна быть бинарной \(содержать два уникальных значения\)/i, message: 'Группирующая переменная должна содержать только два уникальных значения (например, 0 и 1).' },
             { regex: /nan/i, message: 'Некоторые значения в результате анализа равны NaN. Проверьте данные.' },
-            { regex: /одинаковые колонки/i, message: 'Нельзя выбирать одинаковые колонки для независимой и группирующей переменной. Пожалуйста, выберите разные колонки.' }
+            { regex: /одинаковые колонки/i, message: 'Нельзя выбирать одинаковые колонки для независимой и группирующей переменной. Пожалуйста, выберите разные колонки.' },
+            { regex: /фактор риска/i, message: 'Проверьте выбранный фактор риска. Убедитесь, что он бинарный и правильно выбран.' },
+            { regex: /исход/i, message: 'Проверьте выбранный исход. Убедитесь, что он бинарный и правильно выбран.' }
         ];
 
         for (const pattern of patterns) {

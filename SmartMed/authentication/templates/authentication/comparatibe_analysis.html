@@ -172,6 +172,27 @@
                     </div>
                 </div>
 
+                <!-- Дополнительные поля для Чувствительности и Специфичности -->
+                <div id="sensitivity_specificity-fields" class="hidden">
+                    <h3>Настройки для Чувствительности и Специфичности</h3>
+                    
+                    <label for="sensitivity-variable1-select">Выберите фактор риска:</label>
+                    <select id="sensitivity-variable1-select" name="sensitivity_variable1" class="select-input" required>
+                        <option value="">-- Выберите фактор риска --</option>
+                    </select>
+                    <div class="explanation">
+                        <p><strong>Фактор риска</strong> - переменная, представляющая наличие или отсутствие риска, например, наличие заболевания (1 - есть, 0 - нет).</p>
+                    </div>
+
+                    <label for="sensitivity-variable2-select">Выберите исход:</label>
+                    <select id="sensitivity-variable2-select" name="sensitivity_variable2" class="select-input" required>
+                        <option value="">-- Выберите исход --</option>
+                    </select>
+                    <div class="explanation">
+                        <p><strong>Исход</strong> - результат теста, например, положительный (1) или отрицательный (0).</p>
+                    </div>
+                </div>
+
                 <label for="test-type" class="chart-label">
                     Выберите тип теста:
                     <div class="tooltip" tabindex="0">

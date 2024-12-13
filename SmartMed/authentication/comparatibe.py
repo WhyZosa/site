@@ -1,5 +1,3 @@
-# authentication/comparatibe.py
-
 import pandas as pd
 import numpy as np
 from scipy import stats
@@ -190,20 +188,29 @@ def generate_chi2_pearson(df, column1, column2):
 
 def generate_sensitivity_specificity(df, column1, column2):
     try:
+        if column1 not in df.columns or column2 not in df.columns:
+            return {"error": f'Указанные колонки "{column1}" и/или "{column2}" не найдены в данных.'}
+
+        # Проверка, что обе колонки содержат только бинарные значения (0 и 1)
         if not set(df[column1].dropna().unique()).issubset({0, 1}) or not set(df[column2].dropna().unique()).issubset({0, 1}):
             return {"error": "Обе колонки должны содержать только бинарные значения (0 и 1)."}
 
-        true_positive = len(df[(df[column1] == 1) & (df[column2] == 1)])
-        false_positive = len(df[(df[column1] == 1) & (df[column2] == 0)])
-        true_negative = len(df[(df[column1] == 0) & (df[column2] == 0)])
-        false_negative = len(df[(df[column1] == 0) & (df[column2] == 1)])
+        # Определение истинных положительных, истинных отрицательных, ложноположительных и ложноотрицательных результатов
+        TP = len(df[(df[column1] == 1) & (df[column2] == 1)])
+        FP = len(df[(df[column1] == 1) & (df[column2] == 0)])
+        TN = len(df[(df[column1] == 0) & (df[column2] == 0)])
+        FN = len(df[(df[column1] == 0) & (df[column2] == 1)])
 
-        sensitivity = true_positive / (true_positive + false_negative) if (true_positive + false_negative) != 0 else np.nan
-        specificity = true_negative / (true_negative + false_positive) if (true_negative + false_positive) != 0 else np.nan
+        sensitivity = TP / (TP + FN) if (TP + FN) != 0 else np.nan
+        specificity = TN / (TN + FP) if (TN + FP) != 0 else np.nan
 
         result = {
             "sensitivity": round(sensitivity, 5) if not np.isnan(sensitivity) else np.nan,
-            "specificity": round(specificity, 5) if not np.isnan(specificity) else np.nan
+            "specificity": round(specificity, 5) if not np.isnan(specificity) else np.nan,
+            "TP": TP,
+            "TN": TN,
+            "FP": FP,
+            "FN": FN
         }
         # Добавление интерпретации
         interpretation = ""
@@ -264,7 +271,7 @@ def generate_odds_relations(df, column1, column2):
 
         contingency_table = pd.crosstab(df[column1], df[column2])
         if not {0, 1}.issubset(contingency_table.columns):
-            return {"error": "Column2 must contain binary values (0 and 1)."}
+            return {"error": "Исходная переменная должна содержать бинарные значения (0 и 1)."}
 
         try:
             odds_group1 = (contingency_table.at[1, 1] / contingency_table.at[1, 0]) if contingency_table.at[1, 0] != 0 else np.nan
@@ -416,6 +423,25 @@ def process_json_comparative(input_json):
                 continue
 
             result = generate_chi2_pearson(df, column1, column2)
+            output[test_type] = result
+
+        elif test_type == 'sensitivity_specificity':
+            column1 = test.get('column1')
+            column2 = test.get('column2')
+
+            if not column1 or not column2:
+                output[test_type] = {"error": "Необходимо указать фактор риска и исход для Чувствительности и Специфичности."}
+                continue
+
+            if column1 == column2:
+                output[test_type] = {"error": "Нельзя выбирать одинаковые переменные для фактора риска и исхода."}
+                continue
+
+            if column1 not in df.columns or column2 not in df.columns:
+                output[test_type] = {"error": f'Указанные переменные "{column1}" и/или "{column2}" не найдены в данных.'}
+                continue
+
+            result = generate_sensitivity_specificity(df, column1, column2)
             output[test_type] = result
 
         else:
